@@ -1,0 +1,74 @@
+stages:
+    - test-python
+    - build-docs
+    - pypi
+
+python3_5_unit_test:
+  image: seriallab/python3.5dev
+  stage: test-python
+  script:
+  - export PYTHONPATH=$PYTHONPATH:$CI_PROJECT_DIR
+  - pip install -r requirements.txt
+  - pip install coverage
+  - cd gs123/tests/
+  - coverage run -m unittest discover
+  - coverage report -m
+  - coverage html
+  artifacts:
+    paths:
+      - gs123/tests/htmlcov/
+
+python3_6_unit_test:
+  image: seriallab/python3.6dev
+  stage: test-python
+  script:
+  - export PYTHONPATH=$PYTHONPATH:$CI_PROJECT_DIR
+  - pip install -r requirements.txt
+  - pip install coverage
+  - cd gs123/tests/
+  - coverage run -m unittest discover
+  - coverage report -m
+  - coverage html
+  artifacts:
+    paths:
+      - gs123/tests/htmlcov/
+
+pages:
+  image: seriallab/python3.5dev
+  stage: build-docs
+  script:
+  - export PYTHONPATH=$PYTHONPATH:$CI_PROJECT_DIR
+  - pip install sphinx recommonmark sphinx_rtd_theme pygments ipython
+  - cd docs/
+  - make html
+  - mv docs/_build/html/ public/
+  artifacts:
+      paths:
+      - public
+      expire_in: 1h
+  only:
+    - tags
+
+######################
+# To implement, uncomment and put a secret
+# variable in your CI config for your PyPI account
+# This will push all taged builds to PyPI.
+######################
+#deploy_pypi:
+#  image: seriallab/python3.5dev
+#  stage: pypi
+#  environment:
+#    name: deployment
+#    url: https://pypi.org/
+#  script:
+#    - echo "[distutils]" >> ~/.pypirc
+#    - echo "index-servers = " >> ~/.pypirc
+#    - echo "[pypi]" >> ~/.pypirc
+#    - echo "username=$PYPI_USER" >> ~/.pypirc
+#    - echo "password=$PYPI_PASSWORD" >> ~/.pypirc
+#    - python setup.py check sdist bdist_wheel upload
+#    - rm ~/.pypirc
+#  only:
+#    - tags
+
+
