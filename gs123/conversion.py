@@ -15,9 +15,11 @@
 
 import re
 from gs123 import regex
+
 FNC1 = '\x1D'
 
-class GTIN14BarcodeConverter:
+
+class BarcodeConverter:
 
     def __init__(self, barcode_val: str,
                  company_prefix_length: int,
@@ -40,6 +42,8 @@ class GTIN14BarcodeConverter:
         self._company_prefix_length = company_prefix_length
         self._serial_number_length = serial_number_length
         self._gtin14 = None
+        self._sscc18 = None
+        self._extension_digit = None
         self._serial_number = None
         self._lot = None
         self._expiration_date = None
@@ -51,25 +55,30 @@ class GTIN14BarcodeConverter:
         self._sscc_pattern = 'urn:epc:id:sscc:{0}.{1}{2}'
         self._is_gtin = False
         match = False
-        if barcode_val.startswith('('):
-            match = regex.NUMERIC_GS1_01_21_OPTIONAL_17_10(
+        if barcode_val.startswith('(01)'):
+            match = regex.NUMERIC_GS1_01_21_OPTIONAL_17_10.match(
                 barcode_val
             )
-        # try to split by fnc1 character
-        vals = self._fnc1_split(barcode_val)
-        if not match:
-            match = regex.NO_PARENS_NUMERIC_GS1_01_21.match(
-                barcode_val
-            )
-        if not match:
-            match = regex.get_no_parens_numeric_gs1_01_21_optional_17_10(
-            ).match(
+        elif barcode_val.startswith('(00)') or barcode_val.startswith('00'):
+            match = regex.SSCC.match(
                 barcode_val
             )
         if not match:
-            match = regex.FNC1_SERIAL.match(
-                barcode_val
-            )
+            # try to split by fnc1 character
+            vals = self._fnc1_split(barcode_val)
+            if not match:
+                match = regex.NO_PARENS_NUMERIC_GS1_01_21.match(
+                    barcode_val
+                )
+            if not match:
+                match = regex.get_no_parens_numeric_gs1_01_21_optional_17_10(
+                ).match(
+                    barcode_val
+                )
+            if not match:
+                match = regex.FNC1_SERIAL.match(
+                    barcode_val
+                )
         if match:
             self._populate(match)
         else:
@@ -77,6 +86,14 @@ class GTIN14BarcodeConverter:
                 'The barcode %s was not valid against the regular expressions '
                 'available in the module.' % barcode_val
             )
+
+    @property
+    def sscc18(self):
+        return self._sscc18
+
+    @property
+    def extension_digit(self):
+        return self._extension_digit
 
     @property
     def gtin14(self) -> str:
@@ -89,8 +106,21 @@ class GTIN14BarcodeConverter:
     @property
     def serial_number(self) -> str:
         """
-        Returns the serial number as a string.
+        Returns the serial number as a string with any leading zeros stripped.
+        To get a non-stripped or non-altered serial number, use the
+        `serial_number_field` property.
         :return: Serial number as string.
+        """
+        return self._serial_number.lstrip("0")
+
+    @property
+    def serial_number_field(self) -> str:
+        """
+        For the `serial_number` property, any leading zeros will be stripped
+        from the serial number field if they are leading
+        zeros.  This function will return the leading zeros if any were
+        present.
+        :return:
         """
         return self._serial_number
 
@@ -129,7 +159,11 @@ class GTIN14BarcodeConverter:
         The company prefix as taken from the barcode value.
         :return: String
         """
-        return self._gtin14[1:self._company_prefix_length + 1]
+        if self._gtin14:
+            ret = self._gtin14[1:self._company_prefix_length + 1]
+        else:
+            ret = self._sscc18[1:self._company_prefix_length + 1]
+        return ret
 
     @property
     def check_digit(self) -> str:
@@ -137,7 +171,11 @@ class GTIN14BarcodeConverter:
         The original check digit supplied in the barcode.
         :return:
         """
-        return self._gtin14[13]
+        if self._gtin14:
+            ret = self._gtin14[13]
+        else:
+            ret = self._sscc18[17]
+        return ret
 
     @property
     def epc_urn(self) -> str:
@@ -145,14 +183,38 @@ class GTIN14BarcodeConverter:
         Returns a GS1 EPC URN value for the given barcode.
         :return: String GS1 EPC URN for the barcode.
         """
+        if self._gtin14:
+            ret = self._sgtin_pattern.format(
+                self.company_prefix,
+                self.indicator_digit,
+                self.item_reference,
+                self.serial_number.lstrip("0")
+            )
+        else:
+            ret = self._sscc_pattern.format(
+                self.company_prefix,
+                self.extension_digit,
+                self.serial_number_field
+            )
+        return ret
+
+    @property
+    def epc_urn_fixed_serial(self) -> str:
+        """
+        Will return a (technically not-valid) EPC URN value with the
+        serial number as it was reported in the barcode- meaning if there
+        was any left zero padding, that padding will be included in the
+        serial number field.
+        :return:
+        """
         return self._sgtin_pattern.format(
             self.company_prefix,
             self.indicator_digit,
             self.item_reference,
-            self.serial_number
+            self.serial_number_field
         )
 
-    def _fnc1_split(self, barcode_val:str) -> list:
+    def _fnc1_split(self, barcode_val: str) -> list:
         """
         Splits the barcode value by the GS1 FNC1 (Ascii GS) character.
         :param barcode_val: The value to split
@@ -169,10 +231,16 @@ class GTIN14BarcodeConverter:
         :return: None
         """
         group_dict = match.groupdict()
-        self._gtin14 = group_dict['gtin14']
-        self._serial_number = group_dict['serial_number']
-        self._expiration_date = group_dict.get('expiration_date')
-        self._lot = group_dict.get('lot')
+        self._gtin14 = group_dict.get('gtin14')
+        if self.gtin14:
+            self._serial_number = group_dict['serial_number'].strip()
+            self._expiration_date = group_dict.get('expiration_date')
+            self._lot = group_dict.get('lot')
+        else:  # this means we have an SSCC
+            self._sscc18 = group_dict['sscc18']
+            self._serial_number = self._sscc18[
+                                  1 + self._company_prefix_length:17]
+            self._extension_digit = self._sscc18[0]
 
     class BarcodeNotValid(BaseException):
         pass

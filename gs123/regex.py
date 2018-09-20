@@ -32,7 +32,7 @@ _NO_PARENS_NUMERIC_GS1_01_21 = (r'^01(?P<gtin14>[0-9]{14})21(?P<serial_number>'
 _NO_PARENS_NUMERIC_GS1_01_21_OPTIONAL_17_10 = \
     (r'^01(?P<gtin14>[0-9]{14})'
      r'21(?P<serial_number>[0-9,A-Z]{{%serial_number_length%}})'
-     r'(17(?P<expiration_date>[0-9]{6})'
+     r'(17(?P<expiration_date>(\d{6}))'
      r'10(?P<lot>[\x21-\x22\x25-\x2F\x30-\x39\x41-\x5A\x5F\x61-\x7A]{0,20}))?$')
 
 NUMERIC_GS1_01_21_OPTIONAL_17_10 = re.compile(
@@ -54,5 +54,11 @@ def get_no_parens_numeric_gs1_01_21_optional_17_10(serial_number_length=12):
     )
     return re.compile(pattern)
 
-_FNC1_SERIAL = r'^01(?P<gtin14>[0-9]{14})21(?P<serial_number>[0-9,A-Z]{12})((17|\x1D17)(?P<expiration_date>[0-9]{6})10(?P<lot>[\x21-\x22\x25-\x2F\x30-\x39\x41-\x5A\x5F\x61-\x7A]{0,20}))?$'
+# https://regex101.com/r/H0fHK8/5
+_FNC1_SERIAL = r'^01(?P<gtin14>[0-9]{14})21(?P<serial_number>[0-9,A-Z]*?(\x1d\b))(17(?P<expiration_date>[0-9]{6})10(?P<lot>[\x21-\x22\x25-\x2F\x30-\x39\x41-\x5A\x5F\x61-\x7A]{0,20}))?'
 FNC1_SERIAL = re.compile(_FNC1_SERIAL)
+
+# https://regex101.com/r/ivtuux/1/
+_SSCC = r'^(00|\(00\))(?P<sscc18>\d{18})$'
+SSCC = re.compile(_SSCC)
+
