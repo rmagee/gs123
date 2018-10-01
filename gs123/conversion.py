@@ -20,6 +20,9 @@ FNC1 = '\x1D'
 
 
 class BarcodeConverter:
+    """
+    Converts barcode values to URN values.
+    """
 
     def __init__(self, barcode_val: str,
                  company_prefix_length: int,

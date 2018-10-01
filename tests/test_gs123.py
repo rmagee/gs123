@@ -17,6 +17,7 @@ import unittest
 from click.testing import CliRunner
 
 from gs123.conversion import BarcodeConverter
+from gs123.check_digit import calculate_check_digit
 from gs123 import cli
 
 
@@ -136,6 +137,20 @@ class TestGs123(unittest.TestCase):
             converter = BarcodeConverter(
                 '012392348439', 6
             )
+
+    def test_check_digits(self):
+        self.assertEqual(
+            calculate_check_digit("0099999999998"),
+            "00999999999986"
+        )
+        self.assertEqual(
+            calculate_check_digit("12345678901234567"),
+            "123456789012345675"
+        )
+        self.assertEqual(
+            calculate_check_digit("123456789012"),
+            "1234567890128"
+        )
 
     def test_command_line_interface(self):
         """Test the CLI."""
