@@ -62,3 +62,5 @@ FNC1_SERIAL = re.compile(_FNC1_SERIAL)
 _SSCC = r'^(00|\(00\))(?P<sscc18>\d{18})$'
 SSCC = re.compile(_SSCC)
 
+# https://regex101.com/r/wjN6lC/1/
+NO_PARENS_NUMERIC_GS1_01_21_IN_DOC = r'01(?P<gtin14>[0-9]{14})21(?P<serial_number>[0-9,A-Z]{1,20})'
