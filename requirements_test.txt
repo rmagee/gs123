@@ -1,3 +1,6 @@
 lxml
 Click
+Django
 quartet_capture
+quartet_epcis
+

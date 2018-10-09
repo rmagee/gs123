@@ -13,16 +13,31 @@
 #
 # Copyright 2018 SerialLab Corp.  All rights reserved.
 
+import os
 import sys
 import click
 
+try:
+    from gs123.xml_conversion import convert_xml_file
+except ImportError:
+    sys.path.append(os.path.join('../',os.path.dirname(__file__)))
+    from gs123.xml_conversion import convert_xml_file
+
 
 @click.command()
-def main(args=None):
+@click.option(
+    '-i', '--input-file',
+    help='An input file with barcode data to convert'
+)
+@click.option(
+    '-o', '--output-file',
+    help='The output file for converted data'
+)
+def main(input_file, output_file):
     """Console script for gs123."""
-    click.echo("Replace this message by putting your code into "
-               "gs123.cli.main")
-    click.echo("See click documentation at http://click.pocoo.org/")
+    input_file = os.path.abspath(input_file)
+    output_file = os.path.abspath(output_file)
+    convert_xml_file(input_file, output_file)
     return 0
 
 

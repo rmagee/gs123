@@ -13,15 +13,23 @@
 #
 # Copyright 2018 SerialLab Corp.  All rights reserved.
 
+import os
 import unittest
-from click.testing import CliRunner
+import django
+from django.test import TestCase
+
+os.environ['DJANGO_SETTINGS_MODULE'] = 'tests.test_settings'
+django.setup()
+
+from quartet_capture import models
+from quartet_capture.rules import Rule
 
 from gs123.conversion import BarcodeConverter
+from gs123.xml_conversion import convert_xml_file, convert_xml_string
 from gs123.check_digit import calculate_check_digit
-from gs123 import cli
 
 
-class TestGs123(unittest.TestCase):
+class TestGs123(TestCase):
     """Tests for `gs123` package."""
 
     def test_01_21_no_parens(self):
@@ -152,12 +160,129 @@ class TestGs123(unittest.TestCase):
             "1234567890128"
         )
 
-    def test_command_line_interface(self):
-        """Test the CLI."""
-        runner = CliRunner()
-        result = runner.invoke(cli.main)
-        assert result.exit_code == 0
-        assert 'gs123.cli.main' in result.output
-        help_result = runner.invoke(cli.main, ['--help'])
-        assert help_result.exit_code == 0
-        assert '--help  Show this message and exit.' in help_result.output
+    def test_file_conversion(self):
+        curpath = os.path.join(os.path.dirname(__file__),
+                               'data/serialnumbers.xml')
+        output_file_path = os.path.join(os.path.dirname(__file__),
+                                        'data/converted.xml')
+        convert_xml_file(curpath, output_file_path, company_prefix_length=6,
+                         serial_number_length=10)
+
+    def test_string_conversion(self):
+        data = """<?xml version='1.0' encoding='UTF-8'?>
+<S:Envelope xmlns:S="http://schemas.xmlsoap.org/soap/envelope/">
+    <S:Body>
+        <ns2:serialNumbersRequestResponse xmlns:ns2="urn:test:soap">
+            <SNResponse>
+                <ReceivingSystem>0344444000006</ReceivingSystem>
+                <SendingSystem>0303780000063</SendingSystem>
+                <ActionCode>C</ActionCode>
+                <EncodingType>SGTIN</EncodingType>
+                <IDType>GS1_SER</IDType>
+                <ObjectKey>
+                    <Name>GTIN</Name>
+                    <Value>00377713112102</Value>
+                </ObjectKey>
+                <RandomizedNumberList>
+                    <SerialNo>0100377713112102211RFXVHNPA111</SerialNo>
+                    <SerialNo>01003777131121022114R2FANWAG12</SerialNo>
+                    <SerialNo>0100377713112102212FWA6AVK7614</SerialNo>
+                    <SerialNo>0100377713112102212NN3NG5VK415</SerialNo>
+                    <SerialNo>01003777131121022119KNN3H4A145</SerialNo>
+                    <SerialNo>01003777131121022125P4N3X8NP45</SerialNo>
+                    <SerialNo>01003777131121022116326N1GFV75</SerialNo>
+                    <SerialNo>010037771311210221148NNK9N7488</SerialNo>
+                    <SerialNo>01003777131121022115WANPT8KR34</SerialNo>
+                    <SerialNo>01003777131121022113CK6FRH7R88</SerialNo>
+                    <SerialNo>0100377713112102211X769VGH1G7J</SerialNo>
+                    <SerialNo>010037771311210221325NV1T32FSD</SerialNo>
+                    <SerialNo>01003777131121022117F4VTPWR5CV</SerialNo>
+                    <SerialNo>0100377713112102212P5W5R9WRGED</SerialNo>
+                    <SerialNo>0100377713112102211NK693FK75FF</SerialNo>
+                    <SerialNo>0100377713112102212F397C3455LM</SerialNo>
+                    <SerialNo>0100377713112102212F76HPVFF5ED</SerialNo>
+                    <SerialNo>0100377713112102212CWRCFTTPTEW</SerialNo>
+                    <SerialNo>0100377713112102211N3F9PTP14DF</SerialNo>
+                    <SerialNo>010037771311210221245RV96KFHJK</SerialNo>
+                </RandomizedNumberList>
+            </SNResponse>
+        </ns2:serialNumbersRequestResponse>
+    </S:Body>
+</S:Envelope>"""
+        ret = convert_xml_string(data, company_prefix_length=6)
+        print(ret)
+
+    def test_step(self):
+        """
+        Test the XMLBarcodeConversion step.
+        :return: None
+        """
+        data = """<?xml version='1.0' encoding='UTF-8'?>
+        <S:Envelope xmlns:S="http://schemas.xmlsoap.org/soap/envelope/">
+            <S:Body>
+                <ns2:serialNumbersRequestResponse xmlns:ns2="urn:test:soap">
+                    <SNResponse>
+                        <ReceivingSystem>0344444000006</ReceivingSystem>
+                        <SendingSystem>0303780000063</SendingSystem>
+                        <ActionCode>C</ActionCode>
+                        <EncodingType>SGTIN</EncodingType>
+                        <IDType>GS1_SER</IDType>
+                        <ObjectKey>
+                            <Name>GTIN</Name>
+                            <Value>00377713112102</Value>
+                        </ObjectKey>
+                        <RandomizedNumberList>
+                            <SerialNo>0100377713112102211RFXVHNPA111</SerialNo>
+                            <SerialNo>01003777131121022114R2FANWAG12</SerialNo>
+                            <SerialNo>0100377713112102212FWA6AVK7614</SerialNo>
+                            <SerialNo>0100377713112102212NN3NG5VK415</SerialNo>
+                            <SerialNo>01003777131121022119KNN3H4A145</SerialNo>
+                            <SerialNo>01003777131121022125P4N3X8NP45</SerialNo>
+                            <SerialNo>01003777131121022116326N1GFV75</SerialNo>
+                            <SerialNo>010037771311210221148NNK9N7488</SerialNo>
+                            <SerialNo>01003777131121022115WANPT8KR34</SerialNo>
+                            <SerialNo>01003777131121022113CK6FRH7R88</SerialNo>
+                            <SerialNo>0100377713112102211X769VGH1G7J</SerialNo>
+                            <SerialNo>010037771311210221325NV1T32FSD</SerialNo>
+                            <SerialNo>01003777131121022117F4VTPWR5CV</SerialNo>
+                            <SerialNo>0100377713112102212P5W5R9WRGED</SerialNo>
+                            <SerialNo>0100377713112102211NK693FK75FF</SerialNo>
+                            <SerialNo>0100377713112102212F397C3455LM</SerialNo>
+                            <SerialNo>0100377713112102212F76HPVFF5ED</SerialNo>
+                            <SerialNo>0100377713112102212CWRCFTTPTEW</SerialNo>
+                            <SerialNo>0100377713112102211N3F9PTP14DF</SerialNo>
+                            <SerialNo>010037771311210221245RV96KFHJK</SerialNo>
+                        </RandomizedNumberList>
+                    </SNResponse>
+                </ns2:serialNumbersRequestResponse>
+            </S:Body>
+        </S:Envelope>"""
+        db_rule, db_task = self._create_rule()
+        c_rule = Rule(db_task.rule, db_task)
+        c_rule.context.context['NUMBER_RESPONSE'] = data
+        c_rule.execute('')
+        self.assertTrue('urn:epc:id:sgtin:037771.0311210.1RFXVHNPA111' in
+                        c_rule.context.context['NUMBER_RESPONSE'])
+
+    def _create_rule(self):
+        db_rule = models.Rule()
+        db_rule.name = 'xml_barcode_conversion'
+        db_rule.description = 'XML Barcode conversion step rule.'
+        db_rule.save()
+        rp = models.RuleParameter(name='test name', value='test value',
+                                  rule=db_rule)
+        rp.save()
+        # create a new step
+        epcis_step = models.Step()
+        epcis_step.name = 'parse-epcis'
+        epcis_step.description = 'Parse the EPCIS data and store in database.'
+        epcis_step.order = 1
+        epcis_step.step_class = 'gs123.steps.XMLBarcodeConversionStep'
+        epcis_step.rule = db_rule
+        epcis_step.save()
+
+        db_task = models.Task(
+            rule=db_rule,
+            status='QUEUED',
+        )
+        return db_rule, db_task
