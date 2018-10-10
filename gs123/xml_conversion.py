@@ -21,9 +21,15 @@ from gs123.conversion import BarcodeConverter
 def convert_xml_string(data: str,
                        company_prefix_length: int = 6,
                        serial_number_length: int = 12):
-    elements = etree.iterparse(BytesIO(data.encode('utf-8')),
-                               events=('start', 'end',),
-                               remove_comments=True)
+    if isinstance(data, bytes):
+        elements = etree.iterparse(BytesIO(data),
+                                   events=('start', 'end',),
+                                   remove_comments=True)
+    elif isinstance(data, str):
+        elements = etree.iterparse(BytesIO(data.encode('utf-8')),
+                                   events=('start', 'end',),
+                                   remove_comments=True)
+
     with StringIO('') as output_file:
         _parse_xml(company_prefix_length, elements,
                    serial_number_length)

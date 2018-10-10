@@ -259,6 +259,10 @@ class TestGs123(TestCase):
         </S:Envelope>"""
         db_rule, db_task = self._create_rule()
         c_rule = Rule(db_task.rule, db_task)
+        c_rule.context.context['NUMBER_RESPONSE'] = data.encode('utf-8')
+        c_rule.execute('')
+        self.assertTrue('urn:epc:id:sgtin:037771.0311210.1RFXVHNPA111' in
+                        c_rule.context.context['NUMBER_RESPONSE'])
         c_rule.context.context['NUMBER_RESPONSE'] = data
         c_rule.execute('')
         self.assertTrue('urn:epc:id:sgtin:037771.0311210.1RFXVHNPA111' in
