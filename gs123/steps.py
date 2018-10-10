@@ -29,10 +29,10 @@ class XMLBarcodeConversionStep(Step):
         context_key = self.get_parameter('ContextKey', 'NUMBER_RESPONSE')
         self.info('Using context key %s' % context_key)
         barcode_xml = rule_context.context[context_key]
-        self.info('Barcode data has been filtered and replaced where '
-                  'possible.')
         rule_context.context[context_key] = convert_xml_string(
             barcode_xml).decode('utf-8')
+        self.info('Barcode data has been filtered and replaced where '
+                  'possible.')
 
     @property
     def declared_parameters(self):

@@ -58,6 +58,8 @@ class BarcodeConverter:
         self._sscc_pattern = 'urn:epc:id:sscc:{0}.{1}{2}'
         self._is_gtin = False
         match = False
+        if not barcode_val:
+            raise self.BarcodeNotValid('No barcode was present.')
         if barcode_val.startswith('(01)'):
             match = regex.NUMERIC_GS1_01_21_OPTIONAL_17_10.match(
                 barcode_val
