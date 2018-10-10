@@ -1,6 +1,7 @@
 lxml
 Click
 Django
+coverage==4.5.1
 quartet_capture
 quartet_epcis
 
