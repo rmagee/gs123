@@ -39,7 +39,7 @@ pages:
   - pip install sphinx recommonmark sphinx_rtd_theme pygments ipython
   - cd docs/
   - make html
-  - mv docs/_build/html/ public/
+  - mv ./_build/html/ public/
   artifacts:
       paths:
       - public
