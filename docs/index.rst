@@ -12,6 +12,7 @@ Welcome to GS123's documentation!
    contributing
    authors
    history
+   step
 
 Indices and tables
 ==================
