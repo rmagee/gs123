@@ -30,3 +30,11 @@ keys for XML data to convert.
     that have no delimiting parenthesis around the application identifiers.
     The default is 12.
 
+Class Path
+----------
+
+The class path for the Step configuration in QU4RTET capture is:
+
+.. code-block:: text
+
+    gs123.steps.XMLBarcodeConversionStep
