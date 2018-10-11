@@ -32,13 +32,7 @@ You can either clone the public repository:
 
 .. code-block:: console
 
-    $ git clone git://github.com/serial-lab/gs123
-
-Or download the `tarball`_:
-
-.. code-block:: console
-
-    $ curl  -OL https://gitlab.com/serial-lab/gs123/tarball/master
+    $ git clone git://gitlab.com/serial-lab/gs123
 
 Once you have a copy of the source, you can install it with:
 

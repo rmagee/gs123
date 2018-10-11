@@ -1,22 +1,6 @@
 
 Using the GS123 Python Module
 =============================
-**Note:** this is a copy of the included Jupyter notebook included in this
-documents directory.  If you'd like to try out some of the code shown here,
-install *Jupyter*:
-
-.. code-block:: text
-
-    pip install jupyter
-
-Then run jupyter within the docs directory of this code base
-
-.. code-block:: text
-
-    jupyter notebook
-
-Once your browser brings up the directory, click on the `examples.pynb`
-and you'll be able to run the code within this document.
 
 .. code:: ipython3
 
@@ -43,7 +27,7 @@ parts of the GTIN along with a URN representation of that GTIN barcode.
 .. code:: ipython3
 
     from gs123 import conversion
-
+    
     # here we create a new GTIN converter and pass in a GTIN (01 21) string along
     # with the legnth of the company prefix in the GTIN-14 portion (6 is the default)
     converter = conversion.BarcodeConverter('011234567890123421123456789012',6)
@@ -57,26 +41,13 @@ parts of the GTIN along with a URN representation of that GTIN barcode.
     print(converter.indicator_digit)
     print(converter.item_reference)
 
-
-.. parsed-literal::
-
-    4
-    234567
-    urn:epc:id:sgtin:234567.1890123.123456789012
-    12345678901234
-    123456789012
-    123456789012
-    1
-    890123
-
-
 01-21 With Parenthesis (GS1 App Identifiers)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code:: ipython3
 
     from gs123 import conversion
-
+    
     # here we create a new GTIN converter and pass in a GTIN (01 21) string along
     # with the legnth of the company prefix in the GTIN-14 portion (6 is the default)
     converter = conversion.BarcodeConverter('(01)12345678901234(21)123456789012',6)
@@ -89,19 +60,6 @@ parts of the GTIN along with a URN representation of that GTIN barcode.
     print(converter.serial_number_field)
     print(converter.indicator_digit)
     print(converter.item_reference)
-
-
-.. parsed-literal::
-
-    4
-    234567
-    urn:epc:id:sgtin:234567.1890123.123456789012
-    12345678901234
-    123456789012
-    123456789012
-    1
-    890123
-
 
 01-21-17-10 Without Parenthesis (Fixed Serial Number Field Length)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -127,19 +85,6 @@ FNC1 character at the end of the serial-number, this is not required.
     print(converter.item_reference)
     print(converter.lot)
     print(converter.expiration_date)
-
-
-
-.. parsed-literal::
-
-    1
-    031234
-    urn:epc:id:sgtin:031234.0567890.1
-    00312345678901
-    0
-    567890
-    ABC123
-    191231
 
 
 01-21-17-10 Without Parenthesis (FNC1 Delimiter for Serial Number)
@@ -168,21 +113,6 @@ parse a barcode with an FNC1 delimiter.
     print(converter.lot)
     print(converter.expiration_date)
 
-
-.. parsed-literal::
-
-    1
-    031234
-    urn:epc:id:sgtin:031234.0567890.1
-    00312345678901
-    1
-    000000000001
-    0
-    567890
-    ABC123
-    191231
-
-
 01-21-17-10 With Parenthesis
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -204,21 +134,6 @@ Here we have the parenthesis around the app identifiers…
     print(converter.item_reference)
     print(converter.lot)
     print(converter.expiration_date)
-
-
-.. parsed-literal::
-
-    1
-    031234
-    urn:epc:id:sgtin:031234.0567890.1
-    00312345678901
-    1
-    000000000001
-    0
-    567890
-    ABC123
-    191231
-
 
 SSCC-18 Conversion
 ------------------
@@ -246,18 +161,6 @@ SSCC-18 No Parenthesis
     print(converter.serial_number_field)
 
 
-
-.. parsed-literal::
-
-    7
-    123456
-    urn:epc:id:sscc:123456.01234567890
-    0
-    012345612345678907
-    1234567890
-    1234567890
-
-
 SSCC-18 No Parenthesis
 ~~~~~~~~~~~~~~~~~~~~~~
 
@@ -275,15 +178,62 @@ SSCC-18 No Parenthesis
     print(converter.serial_number)
     print(converter.serial_number_field)
 
+XML File and String Conversion
+==============================
 
-.. parsed-literal::
+The ``gs123.xml_conversion`` module will parse XML structures in either
+string or file format and convert any barcode values it finds within the
+elements of an XML document. To convert an entire file from the command
+line you can use the following syntax:
 
-    7
-    123456
-    urn:epc:id:sscc:123456.01234567890
-    0
-    012345612345678907
-    1234567890
-    1234567890
+``python gs123conversion.py --input-file=../tests/data/serialnumbers.xml --output-file=../tests/data/urns.xml``
 
+To convert a string or bytes read from a file programmatically, do the
+following:
+
+.. code:: ipython3
+
+    from gs123.xml_conversion import convert_xml_string
+    data = """<?xml version='1.0' encoding='UTF-8'?>
+    <S:Envelope xmlns:S="http://schemas.xmlsoap.org/soap/envelope/">
+        <S:Body>
+            <ns2:serialNumbersRequestResponse xmlns:ns2="urn:test:soap">
+                <SNResponse>
+                    <ReceivingSystem>0344444000006</ReceivingSystem>
+                    <SendingSystem>0303780000063</SendingSystem>
+                    <ActionCode>C</ActionCode>
+                    <EncodingType>SGTIN</EncodingType>
+                    <IDType>GS1_SER</IDType>
+                    <ObjectKey>
+                        <Name>GTIN</Name>
+                        <Value>00377713112102</Value>
+                    </ObjectKey>
+                    <RandomizedNumberList>
+                        <SerialNo>0100377713112102211RFXVHNPA111</SerialNo>
+                        <SerialNo>01003777131121022114R2FANWAG12</SerialNo>
+                        <SerialNo>0100377713112102212FWA6AVK7614</SerialNo>
+                        <SerialNo>0100377713112102212NN3NG5VK415</SerialNo>
+                        <SerialNo>01003777131121022119KNN3H4A145</SerialNo>
+                        <SerialNo>01003777131121022125P4N3X8NP45</SerialNo>
+                        <SerialNo>01003777131121022116326N1GFV75</SerialNo>
+                        <SerialNo>010037771311210221148NNK9N7488</SerialNo>
+                        <SerialNo>01003777131121022115WANPT8KR34</SerialNo>
+                        <SerialNo>01003777131121022113CK6FRH7R88</SerialNo>
+                        <SerialNo>0100377713112102211X769VGH1G7J</SerialNo>
+                        <SerialNo>010037771311210221325NV1T32FSD</SerialNo>
+                        <SerialNo>01003777131121022117F4VTPWR5CV</SerialNo>
+                        <SerialNo>0100377713112102212P5W5R9WRGED</SerialNo>
+                        <SerialNo>0100377713112102211NK693FK75FF</SerialNo>
+                        <SerialNo>0100377713112102212F397C3455LM</SerialNo>
+                        <SerialNo>0100377713112102212F76HPVFF5ED</SerialNo>
+                        <SerialNo>0100377713112102212CWRCFTTPTEW</SerialNo>
+                        <SerialNo>0100377713112102211N3F9PTP14DF</SerialNo>
+                        <SerialNo>010037771311210221245RV96KFHJK</SerialNo>
+                    </RandomizedNumberList>
+                </SNResponse>
+            </ns2:serialNumbersRequestResponse>
+        </S:Body>
+    </S:Envelope>"""
+    converted_data = convert_xml_string(data, company_prefix_length=6)
+    print(converted_data.decode('utf-8'))
 

@@ -14,7 +14,7 @@
 # Copyright 2018 SerialLab Corp.  All rights reserved.
 
 import os
-import unittest
+from click.testing import CliRunner
 import django
 from django.test import TestCase
 
@@ -212,7 +212,63 @@ class TestGs123(TestCase):
         ret = convert_xml_string(data, company_prefix_length=6)
         print(ret)
 
-    def test_step(self):
+    def test_bytes_step(self):
+        """
+        Test the XMLBarcodeConversion step.
+        :return: None
+        """
+        data = b"""<?xml version='1.0' encoding='UTF-8'?>
+        <S:Envelope xmlns:S="http://schemas.xmlsoap.org/soap/envelope/">
+            <S:Body>
+                <ns2:serialNumbersRequestResponse xmlns:ns2="urn:test:soap">
+                    <SNResponse>
+                        <ReceivingSystem>0344444000006</ReceivingSystem>
+                        <SendingSystem>0303780000063</SendingSystem>
+                        <ActionCode>C</ActionCode>
+                        <EncodingType>SGTIN</EncodingType>
+                        <IDType>GS1_SER</IDType>
+                        <ObjectKey>
+                            <Name>GTIN</Name>
+                            <Value>00377713112102</Value>
+                        </ObjectKey>
+                        <RandomizedNumberList>
+                            <SerialNo>0100377713112102211RFXVHNPA111</SerialNo>
+                            <SerialNo>01003777131121022114R2FANWAG12</SerialNo>
+                            <SerialNo>0100377713112102212FWA6AVK7614</SerialNo>
+                            <SerialNo>0100377713112102212NN3NG5VK415</SerialNo>
+                            <SerialNo>01003777131121022119KNN3H4A145</SerialNo>
+                            <SerialNo>01003777131121022125P4N3X8NP45</SerialNo>
+                            <SerialNo>01003777131121022116326N1GFV75</SerialNo>
+                            <SerialNo>010037771311210221148NNK9N7488</SerialNo>
+                            <SerialNo>01003777131121022115WANPT8KR34</SerialNo>
+                            <SerialNo>01003777131121022113CK6FRH7R88</SerialNo>
+                            <SerialNo>0100377713112102211X769VGH1G7J</SerialNo>
+                            <SerialNo>010037771311210221325NV1T32FSD</SerialNo>
+                            <SerialNo>01003777131121022117F4VTPWR5CV</SerialNo>
+                            <SerialNo>0100377713112102212P5W5R9WRGED</SerialNo>
+                            <SerialNo>0100377713112102211NK693FK75FF</SerialNo>
+                            <SerialNo>0100377713112102212F397C3455LM</SerialNo>
+                            <SerialNo>0100377713112102212F76HPVFF5ED</SerialNo>
+                            <SerialNo>0100377713112102212CWRCFTTPTEW</SerialNo>
+                            <SerialNo>0100377713112102211N3F9PTP14DF</SerialNo>
+                            <SerialNo>010037771311210221245RV96KFHJK</SerialNo>
+                        </RandomizedNumberList>
+                    </SNResponse>
+                </ns2:serialNumbersRequestResponse>
+            </S:Body>
+        </S:Envelope>"""
+        db_rule, db_task, db_step = self._create_rule()
+        c_rule = Rule(db_task.rule, db_task)
+        c_rule.context.context['NUMBER_RESPONSE'] = data
+        c_rule.execute('')
+        self.assertTrue('urn:epc:id:sgtin:037771.0311210.1RFXVHNPA111' in
+                        c_rule.context.context['NUMBER_RESPONSE'])
+        c_rule.context.context['NUMBER_RESPONSE'] = data
+        c_rule.execute('')
+        self.assertTrue('urn:epc:id:sgtin:037771.0311210.1RFXVHNPA111' in
+                        c_rule.context.context['NUMBER_RESPONSE'])
+
+    def test_string_step(self):
         """
         Test the XMLBarcodeConversion step.
         :return: None
@@ -257,15 +313,74 @@ class TestGs123(TestCase):
                 </ns2:serialNumbersRequestResponse>
             </S:Body>
         </S:Envelope>"""
-        db_rule, db_task = self._create_rule()
+        db_rule, db_task, db_step = self._create_rule()
         c_rule = Rule(db_task.rule, db_task)
         c_rule.context.context['NUMBER_RESPONSE'] = data.encode('utf-8')
         c_rule.execute('')
         self.assertTrue('urn:epc:id:sgtin:037771.0311210.1RFXVHNPA111' in
                         c_rule.context.context['NUMBER_RESPONSE'])
-        c_rule.context.context['NUMBER_RESPONSE'] = data
+
+    def test_params(self):
+        data = """<?xml version='1.0' encoding='UTF-8'?>
+        <S:Envelope xmlns:S="http://schemas.xmlsoap.org/soap/envelope/">
+            <S:Body>
+                <ns2:serialNumbersRequestResponse xmlns:ns2="urn:test:soap">
+                    <SNResponse>
+                        <ReceivingSystem>0344444000006</ReceivingSystem>
+                        <SendingSystem>0303780000063</SendingSystem>
+                        <ActionCode>C</ActionCode>
+                        <EncodingType>SGTIN</EncodingType>
+                        <IDType>GS1_SER</IDType>
+                        <ObjectKey>
+                            <Name>GTIN</Name>
+                            <Value>00377713112102</Value>
+                        </ObjectKey>
+                        <RandomizedNumberList>
+                            <SerialNo>0100377713112102211RFXVHNPA1111712311910LOT777</SerialNo>
+                            <SerialNo>01003777131121022114R2FANWAG121712311910LOT777</SerialNo>
+                            <SerialNo>0100377713112102212FWA6AVK76141712311910LOT777</SerialNo>
+                            <SerialNo>0100377713112102212NN3NG5VK4151712311910LOT777</SerialNo>
+                            <SerialNo>01003777131121022119KNN3H4A1451712311910LOT777</SerialNo>
+                            <SerialNo>01003777131121022125P4N3X8NP451712311910LOT777</SerialNo>
+                            <SerialNo>01003777131121022116326N1GFV751712311910LOT777</SerialNo>
+                            <SerialNo>010037771311210221148NNK9N74881712311910LOT777</SerialNo>
+                            <SerialNo>01003777131121022115WANPT8KR341712311910LOT777</SerialNo>
+                            <SerialNo>01003777131121022113CK6FRH7R881712311910LOT777</SerialNo>
+                            <SerialNo>0100377713112102211X769VGH1G7J1712311910LOT777</SerialNo>
+                            <SerialNo>010037771311210221325NV1T32FSD1712311910LOT777</SerialNo>
+                            <SerialNo>01003777131121022117F4VTPWR5CV1712311910LOT777</SerialNo>
+                            <SerialNo>0100377713112102212P5W5R9WRGED1712311910LOT777</SerialNo>
+                            <SerialNo>0100377713112102211NK693FK75FF1712311910LOT777</SerialNo>
+                            <SerialNo>0100377713112102212F397C3455LM1712311910LOT777</SerialNo>
+                            <SerialNo>0100377713112102212F76HPVFF5ED1712311910LOT777</SerialNo>
+                            <SerialNo>0100377713112102212CWRCFTTPTEW1712311910LOT777</SerialNo>
+                            <SerialNo>0100377713112102211N3F9PTP14DF1712311910LOT777</SerialNo>
+                            <SerialNo>010037771311210221245RV96KFHJK1712311910LOT777</SerialNo>
+                        </RandomizedNumberList>
+                    </SNResponse>
+                </ns2:serialNumbersRequestResponse>
+            </S:Body>
+        </S:Envelope>"""
+        db_rule, db_task, db_step = self._create_rule()
+        company_prefix_length = models.StepParameter.objects.create(
+            name='Company Prefix Length',
+            value='7',
+            step=db_step
+        )
+        serial_number_length = models.StepParameter.objects.create(
+            name='Serial Number Length',
+            value='10',
+            step=db_step
+        )
+        c_rule = Rule(db_task.rule, db_task)
+        c_rule.context.context['NUMBER_RESPONSE'] = data.encode('utf-8')
         c_rule.execute('')
-        self.assertTrue('urn:epc:id:sgtin:037771.0311210.1RFXVHNPA111' in
+        self.assertTrue('urn:epc:id:sgtin:0377713.011210.1RFXVHNPA111' in
+                        c_rule.context.context['NUMBER_RESPONSE'])
+        c_rule = Rule(db_task.rule, db_task)
+        c_rule.context.context['NUMBER_RESPONSE'] = ''
+        c_rule.execute('')
+        self.assertTrue('urn:epc:id:sgtin:0377713.011210.1RFXVHNPA111' not in
                         c_rule.context.context['NUMBER_RESPONSE'])
 
     def _create_rule(self):
@@ -277,16 +392,16 @@ class TestGs123(TestCase):
                                   rule=db_rule)
         rp.save()
         # create a new step
-        epcis_step = models.Step()
-        epcis_step.name = 'parse-epcis'
-        epcis_step.description = 'Parse the EPCIS data and store in database.'
-        epcis_step.order = 1
-        epcis_step.step_class = 'gs123.steps.XMLBarcodeConversionStep'
-        epcis_step.rule = db_rule
-        epcis_step.save()
+        conversion_step = models.Step()
+        conversion_step.name = 'parse-epcis'
+        conversion_step.description = 'Parse the EPCIS data and store in database.'
+        conversion_step.order = 1
+        conversion_step.step_class = 'gs123.steps.XMLBarcodeConversionStep'
+        conversion_step.rule = db_rule
+        conversion_step.save()
 
         db_task = models.Task(
             rule=db_rule,
             status='QUEUED',
         )
-        return db_rule, db_task
+        return db_rule, db_task, conversion_step

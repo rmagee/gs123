@@ -26,18 +26,49 @@ class XMLBarcodeConversionStep(Step):
 
     def execute(self, data, rule_context: RuleContext):
         # get the context key if configured
-        context_key = self.get_parameter('ContextKey', 'NUMBER_RESPONSE')
+        company_prefix_length = self.get_or_create_parameter(
+            'Company Prefix Length',
+            '6',
+            self.declared_parameters['Company Prefix Length']
+        )
+        serial_number_length = self.get_or_create_parameter(
+            'Serial Number Length',
+            '12',
+            self.declared_parameters['Serial Number Length']
+        )
+        context_key = self.get_or_create_parameter('Context Key',
+                                                   'NUMBER_RESPONSE',
+                                                   self.declared_parameters[
+                                                       'Context Key'])
         self.info('Using context key %s' % context_key)
-        barcode_xml = rule_context.context[context_key]
-        rule_context.context[context_key] = convert_xml_string(
-            barcode_xml).decode('utf-8')
-        self.info('Barcode data has been filtered and replaced where '
-                  'possible.')
+        barcode_xml = rule_context.context.get(context_key, None)
+        if barcode_xml:
+            rule_context.context[context_key] = convert_xml_string(
+                barcode_xml,
+                int(company_prefix_length),
+                int(serial_number_length)
+            ).decode('utf-8')
+            self.info('Barcode data has been filtered and replaced where '
+                      'possible.')
+        else:
+            self.warning('No XML was found in the Rule Context under the '
+                         'context key %s.' % context_key)
 
     @property
     def declared_parameters(self):
-        {"ContextKey", "The context key where the data to be converted can "
-                       "be located.  Default is NUMBER_RESPONSE"}
+        return {
+            "Context Key": "The context key where the data "
+                           "to be converted can "
+                           "be located.  Default is NUMBER_RESPONSE",
+            "Serial Number Length": "The length of the serial number field if "
+                                    "the barcode data does not have delimited "
+                                    "app identifiers with "
+                                    "parenthesis and also "
+                                    "has lot and expiry fields. "
+                                    "Default is 12.",
+            "Company Prefix Length": "The length of the company prefix.  "
+                                     "Default is 6."
+        }
 
     def on_failure(self):
         pass

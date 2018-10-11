@@ -15,6 +15,9 @@ GS123
 
 
 Set of python tools to convert various GS1 formats to and from others.
+GS123 is an essential component of the QU4RTET Open Source EPCIS and is
+used in various tasks throughout the platform.  GS123 can also be used
+as a standalone component to convert barcode data to URNs, etc.
 
 Documentation
 -------------

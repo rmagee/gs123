@@ -53,11 +53,10 @@ def convert_xml_file(file_path: str,
     elements = etree.iterparse(file_path, events=('start', 'end',),
                                remove_comments=True)
     with open(output_file_path, 'wb+') as output_file:
-        for event, element in elements:
-            _parse_xml(company_prefix_length, elements,
-                       serial_number_length)
-            output_file.write(etree.tostring(elements.root))
-            output_file.flush()
+        _parse_xml(company_prefix_length, elements,
+                   serial_number_length)
+        output_file.write(etree.tostring(elements.root))
+        output_file.flush()
 
 
 def _parse_xml(company_prefix_length, elements,
@@ -71,5 +70,13 @@ def _parse_xml(company_prefix_length, elements,
                     serial_number_length=serial_number_length
                 )
                 element.text = bc.epc_urn
+            for name, value in element.items():
+                bc = BarcodeConverter(
+                    value,
+                    company_prefix_length=company_prefix_length,
+                    serial_number_length=serial_number_length
+                )
+                element.set(name, bc.epc_urn)
+
         except BarcodeConverter.BarcodeNotValid:
             pass
