@@ -195,45 +195,28 @@ following:
 
     from gs123.xml_conversion import convert_xml_string
     data = """<?xml version='1.0' encoding='UTF-8'?>
-    <S:Envelope xmlns:S="http://schemas.xmlsoap.org/soap/envelope/">
-        <S:Body>
-            <ns2:serialNumbersRequestResponse xmlns:ns2="urn:test:soap">
-                <SNResponse>
-                    <ReceivingSystem>0344444000006</ReceivingSystem>
-                    <SendingSystem>0303780000063</SendingSystem>
-                    <ActionCode>C</ActionCode>
-                    <EncodingType>SGTIN</EncodingType>
-                    <IDType>GS1_SER</IDType>
-                    <ObjectKey>
-                        <Name>GTIN</Name>
-                        <Value>00377713112102</Value>
-                    </ObjectKey>
-                    <RandomizedNumberList>
-                        <SerialNo>0100377713112102211RFXVHNPA111</SerialNo>
-                        <SerialNo>01003777131121022114R2FANWAG12</SerialNo>
-                        <SerialNo>0100377713112102212FWA6AVK7614</SerialNo>
-                        <SerialNo>0100377713112102212NN3NG5VK415</SerialNo>
-                        <SerialNo>01003777131121022119KNN3H4A145</SerialNo>
-                        <SerialNo>01003777131121022125P4N3X8NP45</SerialNo>
-                        <SerialNo>01003777131121022116326N1GFV75</SerialNo>
-                        <SerialNo>010037771311210221148NNK9N7488</SerialNo>
-                        <SerialNo>01003777131121022115WANPT8KR34</SerialNo>
-                        <SerialNo>01003777131121022113CK6FRH7R88</SerialNo>
-                        <SerialNo>0100377713112102211X769VGH1G7J</SerialNo>
-                        <SerialNo>010037771311210221325NV1T32FSD</SerialNo>
-                        <SerialNo>01003777131121022117F4VTPWR5CV</SerialNo>
-                        <SerialNo>0100377713112102212P5W5R9WRGED</SerialNo>
-                        <SerialNo>0100377713112102211NK693FK75FF</SerialNo>
-                        <SerialNo>0100377713112102212F397C3455LM</SerialNo>
-                        <SerialNo>0100377713112102212F76HPVFF5ED</SerialNo>
-                        <SerialNo>0100377713112102212CWRCFTTPTEW</SerialNo>
-                        <SerialNo>0100377713112102211N3F9PTP14DF</SerialNo>
-                        <SerialNo>010037771311210221245RV96KFHJK</SerialNo>
-                    </RandomizedNumberList>
-                </SNResponse>
-            </ns2:serialNumbersRequestResponse>
-        </S:Body>
-    </S:Envelope>"""
+        <sns>
+            <sn>0100377713112102211RFXVHNPA111</sn>
+            <sn>01003777131121022114R2FANWAG12</sn>
+            <sn>0100377713112102212FWA6AVK7614</sn>
+            <sn>0100377713112102212NN3NG5VK415</sn>
+            <sn>01003777131121022119KNN3H4A145</sn>
+            <sn>01003777131121022125P4N3X8NP45</sn>
+            <sn>01003777131121022116326N1GFV75</sn>
+            <sn>010037771311210221148NNK9N7488</sn>
+            <sn>01003777131121022115WANPT8KR34</sn>
+            <sn>01003777131121022113CK6FRH7R88</sn>
+            <sn>0100377713112102211X769VGH1G7J</sn>
+            <sn>010037771311210221325NV1T32FSD</sn>
+            <sn>01003777131121022117F4VTPWR5CV</sn>
+            <sn>0100377713112102212P5W5R9WRGED</sn>
+            <sn>0100377713112102211NK693FK75FF</sn>
+            <sn>0100377713112102212F397C3455LM</sn>
+            <sn>0100377713112102212F76HPVFF5ED</sn>
+            <sn>0100377713112102212CWRCFTTPTEW</sn>
+            <sn>0100377713112102211N3F9PTP14DF</sn>
+            <sn>010037771311210221245RV96KFHJK</sn>
+        </sns>"""
     converted_data = convert_xml_string(data, company_prefix_length=6)
     print(converted_data.decode('utf-8'))
 

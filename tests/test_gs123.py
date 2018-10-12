@@ -175,7 +175,7 @@ class TestGs123(TestCase):
         <ns2:serialNumbersRequestResponse xmlns:ns2="urn:test:soap">
             <SNResponse>
                 <ReceivingSystem>0344444000006</ReceivingSystem>
-                <SendingSystem>0303780000063</SendingSystem>
+                <SendingSystem>0344444000006</SendingSystem>
                 <ActionCode>C</ActionCode>
                 <EncodingType>SGTIN</EncodingType>
                 <IDType>GS1_SER</IDType>
@@ -223,7 +223,7 @@ class TestGs123(TestCase):
                 <ns2:serialNumbersRequestResponse xmlns:ns2="urn:test:soap">
                     <SNResponse>
                         <ReceivingSystem>0344444000006</ReceivingSystem>
-                        <SendingSystem>0303780000063</SendingSystem>
+                        <SendingSystem>0344444000006</SendingSystem>
                         <ActionCode>C</ActionCode>
                         <EncodingType>SGTIN</EncodingType>
                         <IDType>GS1_SER</IDType>
@@ -279,7 +279,7 @@ class TestGs123(TestCase):
                 <ns2:serialNumbersRequestResponse xmlns:ns2="urn:test:soap">
                     <SNResponse>
                         <ReceivingSystem>0344444000006</ReceivingSystem>
-                        <SendingSystem>0303780000063</SendingSystem>
+                        <SendingSystem>0344444000006</SendingSystem>
                         <ActionCode>C</ActionCode>
                         <EncodingType>SGTIN</EncodingType>
                         <IDType>GS1_SER</IDType>
@@ -327,7 +327,7 @@ class TestGs123(TestCase):
                 <ns2:serialNumbersRequestResponse xmlns:ns2="urn:test:soap">
                     <SNResponse>
                         <ReceivingSystem>0344444000006</ReceivingSystem>
-                        <SendingSystem>0303780000063</SendingSystem>
+                        <SendingSystem>0344444000006</SendingSystem>
                         <ActionCode>C</ActionCode>
                         <EncodingType>SGTIN</EncodingType>
                         <IDType>GS1_SER</IDType>
