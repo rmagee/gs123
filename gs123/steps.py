@@ -36,23 +36,38 @@ class XMLBarcodeConversionStep(Step):
             '12',
             self.declared_parameters['Serial Number Length']
         )
-        context_key = self.get_or_create_parameter('Context Key',
-                                                   'NUMBER_RESPONSE',
-                                                   self.declared_parameters[
-                                                       'Context Key'])
+        context_key = self.get_or_create_parameter(
+            'Context Key',
+            'NUMBER_RESPONSE',
+            self.declared_parameters['Context Key']
+        )
+        use_context_key = self.get_or_create_parameter(
+            'Use Context Key',
+            'True',
+            self.declared_parameters['Use Context Key']
+        )
+        use_context_key = ('true' == use_context_key.lower())
         self.info('Using context key %s' % context_key)
-        barcode_xml = rule_context.context.get(context_key, None)
+        if use_context_key:
+            barcode_xml = rule_context.context.get(context_key, None)
+        else:
+            barcode_xml = data
         if barcode_xml:
-            rule_context.context[context_key] = convert_xml_string(
+            converted_data = convert_xml_string(
                 barcode_xml,
                 int(company_prefix_length),
                 int(serial_number_length)
             ).decode('utf-8')
             self.info('Barcode data has been filtered and replaced where '
                       'possible.')
+            if not use_context_key and converted_data:
+                return converted_data
+            else:
+                rule_context.context[context_key] = converted_data
         else:
             self.warning('No XML was found in the Rule Context under the '
-                         'context key %s.' % context_key)
+                         'context key %s or the rule had no inbound data.'
+                         % context_key)
 
     @property
     def declared_parameters(self):
@@ -60,6 +75,11 @@ class XMLBarcodeConversionStep(Step):
             "Context Key": "The context key where the data "
                            "to be converted can "
                            "be located.  Default is NUMBER_RESPONSE",
+            "Use Context Key": "Whether or not to look in the context using "
+                               "the context key for XML to convert. Default "
+                               "is True.  If false, the step will "
+                               "look in the inbound data for barcodes "
+                               "to convert.",
             "Serial Number Length": "The length of the serial number field if "
                                     "the barcode data does not have delimited "
                                     "app identifiers with "
