@@ -13,61 +13,22 @@
 #
 # Copyright 2018 SerialLab Corp.  All rights reserved.
 
-from gs123.xml_conversion import convert_xml_string
+from gs123.xml_conversion import BarcodeConverter, convert_xml_string
+from quartet_capture import models
 from quartet_capture.rules import Step, RuleContext
 
 
-class XMLBarcodeConversionStep(Step):
+class BaseConversionClass(Step):
     """
-    Will look in the rule context for XML with barcode data in it that the
-    gs123 can convert, convert it and replace it with the new converted (to
-    urn) data.
+    Base class for the conversion steps in this module.
     """
 
-    def execute(self, data, rule_context: RuleContext):
-        # get the context key if configured
-        company_prefix_length = self.get_or_create_parameter(
-            'Company Prefix Length',
-            '6',
-            self.declared_parameters['Company Prefix Length']
-        )
-        serial_number_length = self.get_or_create_parameter(
-            'Serial Number Length',
-            '12',
-            self.declared_parameters['Serial Number Length']
-        )
-        context_key = self.get_or_create_parameter(
-            'Context Key',
-            'NUMBER_RESPONSE',
-            self.declared_parameters['Context Key']
-        )
-        use_context_key = self.get_or_create_parameter(
-            'Use Context Key',
-            'True',
-            self.declared_parameters['Use Context Key']
-        )
-        use_context_key = ('true' == use_context_key.lower())
-        self.info('Using context key %s' % context_key)
-        if use_context_key:
-            barcode_xml = rule_context.context.get(context_key, None)
-        else:
-            barcode_xml = data
-        if barcode_xml:
-            converted_data = convert_xml_string(
-                barcode_xml,
-                int(company_prefix_length),
-                int(serial_number_length)
-            ).decode('utf-8')
-            self.info('Barcode data has been filtered and replaced where '
-                      'possible.')
-            if not use_context_key and converted_data:
-                return converted_data
-            else:
-                rule_context.context[context_key] = converted_data
-        else:
-            self.warning('No XML was found in the Rule Context under the '
-                         'context key %s or the rule had no inbound data.'
-                         % context_key)
+    def __init__(self, db_task: models.Task, **kwargs):
+        super().__init__(db_task, **kwargs)
+        self.company_prefix_length, \
+        self.context_key, \
+        self.serial_number_length, \
+        self.use_context_key = self._get_parameter_values()
 
     @property
     def declared_parameters(self):
@@ -92,3 +53,106 @@ class XMLBarcodeConversionStep(Step):
 
     def on_failure(self):
         pass
+
+    def _get_parameter_values(self):
+        """
+        Checks all the step parameters for configured or default values
+        and rerturns.
+        :return: A tuple containing company prefix length, the rule context
+        key to examine, the serial number length, and a boolean value
+        which determines whether the context key should be used to look
+        up data to covert or if the step should convert the data parameter
+        passed into the execute function.
+        """
+        company_prefix_length = self.get_or_create_parameter(
+            'Company Prefix Length',
+            '6',
+            self.declared_parameters['Company Prefix Length']
+        )
+        serial_number_length = self.get_or_create_parameter(
+            'Serial Number Length',
+            '12',
+            self.declared_parameters['Serial Number Length']
+        )
+        context_key = self.get_or_create_parameter(
+            'Context Key',
+            'NUMBER_RESPONSE',
+            self.declared_parameters['Context Key']
+        )
+        use_context_key = self.get_or_create_parameter(
+            'Use Context Key',
+            'True',
+            self.declared_parameters['Use Context Key']
+        )
+        use_context_key = ('true' == use_context_key.lower())
+        self.info('Using context key %s' % context_key)
+        return (
+            company_prefix_length, context_key,
+            serial_number_length, use_context_key
+        )
+
+
+class ListBarcodeConversionStep(BaseConversionClass):
+    """
+    If a list is passed into the rule as data or via the configurable
+    step parameter "Context Key" in which the data is provided in the
+    rule context, will convert any items
+    in the list to valid URNs.
+    """
+
+    def execute(self, data, rule_context: RuleContext):
+        to_process = data or rule_context.context.get(self.context_key)
+        if isinstance(to_process, list):
+            converted = [self.convert(item) for item in to_process]
+            if data:
+                self.info('Inbound data was converted.  Returning back '
+                          'to rule.')
+                return converted
+            else:
+                self.info('The information in context key %s was converted.',
+                          self.context_key)
+                rule_context[self.context_key] = converted
+        else:
+            self.warning('No list data was provided for conversion.')
+
+    def convert(self, data):
+        """
+        Will convert the data parameter to a urn value and return.
+        Override this to return a different value from the BarcodeConverter.
+        :param data: The barcode value to convert.
+        :return: An EPC URN based on the inbound data.
+        """
+        return BarcodeConverter(
+            data,
+            self.company_prefix_length,
+            self.serial_number_length
+        ).epc_urn
+
+class XMLBarcodeConversionStep(BaseConversionClass):
+    """
+    Will look in the rule context for XML with barcode data in it that the
+    gs123 can convert, convert it and replace it with the new converted (to
+    urn) data.
+    """
+
+    def execute(self, data, rule_context: RuleContext):
+        if self.use_context_key:
+            barcode_xml = rule_context.context.get(self.context_key, None)
+        else:
+            barcode_xml = data
+        if barcode_xml:
+            converted_data = convert_xml_string(
+                barcode_xml,
+                int(self.company_prefix_length),
+                int(self.serial_number_length)
+            ).decode('utf-8')
+            self.info('Barcode data has been filtered and replaced where '
+                      'possible.')
+            if not self.use_context_key and converted_data:
+                return converted_data
+            else:
+                rule_context.context[self.context_key] = converted_data
+        else:
+            self.warning('No XML was found in the Rule Context under the '
+                         'context key %s or the rule had no inbound data.'
+                         % self.context_key)
