@@ -54,6 +54,7 @@ def get_no_parens_numeric_gs1_01_21_optional_17_10(serial_number_length=12):
     )
     return re.compile(pattern)
 
+
 # https://regex101.com/r/H0fHK8/5
 _FNC1_SERIAL = r'^01(?P<gtin14>[0-9]{14})21(?P<serial_number>[0-9,A-Z]*?(\x1d\b))(17(?P<expiration_date>[0-9]{6})10(?P<lot>[\x21-\x22\x25-\x2F\x30-\x39\x41-\x5A\x5F\x61-\x7A]{0,20}))?'
 FNC1_SERIAL = re.compile(_FNC1_SERIAL)
@@ -64,3 +65,14 @@ SSCC = re.compile(_SSCC)
 
 # https://regex101.com/r/wjN6lC/1/
 NO_PARENS_NUMERIC_GS1_01_21_IN_DOC = r'01(?P<gtin14>[0-9]{14})21(?P<serial_number>[0-9,A-Z]{1,20})'
+
+# https://regex101.com/r/mVhm8D/2
+SGTIN_URN = r'urn:epc:id:sgtin:(?P<company_prefix>[0-9]{1,10}).(?P<item_reference>[0-9]{1,10}).(?P<serial_number>[0-9a-zA-Z]{1,20})'
+
+# https://regex101.com/r/ik2XH2/1/
+SSCC_URN = r'urn:epc:id:sscc:(?P<company_prefix>[0-9]{4,10}).(?P<serial_number>[0-9]{1,10})'
+
+urn_patterns = [
+    re.compile(SGTIN_URN),
+    re.compile(SSCC_URN)
+]

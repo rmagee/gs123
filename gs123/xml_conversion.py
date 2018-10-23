@@ -21,6 +21,13 @@ from gs123.conversion import BarcodeConverter
 def convert_xml_string(data: str,
                        company_prefix_length: int = 6,
                        serial_number_length: int = 12):
+    """
+    Converts all matching barcode patterns in an xml string.
+    :param data: The data with barcode data
+    :param company_prefix_length: The company prefix length
+    :param serial_number_length: The serial number length
+    :return: The data string with the converted values inserted.
+    """
     if isinstance(data, bytes):
         elements = etree.iterparse(BytesIO(data),
                                    events=('start', 'end',),
@@ -60,18 +67,18 @@ def convert_xml_file(file_path: str,
 
 
 def _parse_xml(company_prefix_length, elements,
-               serial_number_length):
+               serial_number_length, converter_type=BarcodeConverter):
     for event, element in elements:
         try:
             if event == 'end':
-                bc = BarcodeConverter(
+                bc = converter_type(
                     element.text,
                     company_prefix_length=company_prefix_length,
                     serial_number_length=serial_number_length
                 )
                 element.text = bc.epc_urn
             for name, value in element.items():
-                bc = BarcodeConverter(
+                bc = converter_type(
                     value,
                     company_prefix_length=company_prefix_length,
                     serial_number_length=serial_number_length

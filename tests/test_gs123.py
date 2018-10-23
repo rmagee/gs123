@@ -24,7 +24,8 @@ django.setup()
 from quartet_capture import models
 from quartet_capture.rules import Rule
 
-from gs123.conversion import BarcodeConverter
+from gs123.conversion import BarcodeConverter, URNConverter, FNC1, \
+    URNNotValid, InvalidFieldDataError
 from gs123.xml_conversion import convert_xml_file, convert_xml_string
 from gs123.check_digit import calculate_check_digit
 
@@ -466,3 +467,101 @@ class TestGs123(TestCase):
         )
         return db_rule, db_task, conversion_step
 
+    def test_urn_to_barcode(self):
+        urnc = URNConverter(
+            'urn:epc:id:sgtin:0377713.011210.1RFXVHNPA111'
+        )
+        self.assertEqual(
+            urnc.get_barcode_value(),
+            '0100377713112109211RFXVHNPA111'
+        )
+
+    def test_parens(self):
+        urnc = URNConverter(
+            'urn:epc:id:sgtin:0377713.011210.1RFXVHNPA111'
+        )
+        self.assertEqual(
+            urnc.get_barcode_value(parenthesis=True),
+            '(01)00377713112109(21)1RFXVHNPA111'
+        )
+
+    def test_lot_batch(self):
+        urnc = URNConverter(
+            'urn:epc:id:sgtin:0377713.011210.1RFXVHNPA111'
+        )
+        self.assertEqual(
+            urnc.get_barcode_value(
+                lot='ABC123',
+                expiration='181231'
+            ),
+            '0100377713112109211RFXVHNPA1111718123110ABC123'
+        )
+
+    def test_lot_batch_parens(self):
+        urnc = URNConverter(
+            'urn:epc:id:sgtin:0377713.011210.1RFXVHNPA111'
+        )
+        self.assertEqual(
+            urnc.get_barcode_value(
+                lot='ABC123',
+                expiration='181231',
+                parenthesis=True
+            ),
+            '(01)00377713112109(21)1RFXVHNPA111(17)181231(10)ABC123'
+        )
+
+    def test_padding(self):
+        urnc = URNConverter(
+            'urn:epc:id:sgtin:0377713.011210.1RFXVHNPA111'
+        )
+        self.assertEqual(
+            urnc.get_barcode_value(
+                serial_number_length=14,
+                serial_number_padding=True
+            ),
+            '010037771311210921001RFXVHNPA111',
+        )
+
+    def test_fnc1(self):
+        urnc = URNConverter(
+            'urn:epc:id:sgtin:0377713.011210.1RFXVHNPA111'
+        )
+        self.assertEqual(
+            urnc.get_barcode_value(
+                lot='ABC123',
+                expiration='181231',
+                insert_control_char=True
+            ),
+            '0100377713112109211RFXVHNPA111{0}1718123110ABC123'.format(FNC1)
+        )
+
+    def test_serial_number(self):
+        urnc = URNConverter(
+            'urn:epc:id:sgtin:0377713.011210.1RFXVHNPA111'
+        )
+        self.assertEqual(
+            urnc.serial_number,
+            '1RFXVHNPA111'
+        )
+
+    def test_gtin(self):
+        urnc = URNConverter(
+            'urn:epc:id:sgtin:0377713.011210.1RFXVHNPA111'
+        )
+        self.assertEqual(
+            urnc.gtin14,
+            '00377713112109'
+        )
+
+    def test_sscc(self):
+        urnc = URNConverter(
+            'urn:epc:id:sscc:305555.123456'
+        )
+        self.assertEqual(
+            urnc.serial_number,
+            '23456'
+        )
+        self.assertEqual(
+            urnc.sscc18,
+            '130555500000234560'
+        )

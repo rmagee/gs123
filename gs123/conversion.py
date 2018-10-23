@@ -267,6 +267,7 @@ class URNConverter(BarcodeConverter):
         :param expiration: If an expiration date value is supplied, this will
         be added to the barcode as a 17 field/app identifier value.
         """
+        self.is_sgtin = True
         for pattern in regex.urn_patterns:
             match = pattern.match(
                 urn_value
@@ -274,7 +275,7 @@ class URNConverter(BarcodeConverter):
             if match:
                 self._populate(match, urn_value)
 
-    def _populate(self, match: re.Match, urn_value: str):
+    def _populate(self, match, urn_value: str):
         """
         Will populate the class parameters based on the match where
         applicable.
@@ -296,21 +297,16 @@ class URNConverter(BarcodeConverter):
         :param urn_value: The original urn.
         :return: None
         """
+        self.is_sgtin = False
         serial_number = groups.get('serial_number')
         self._extension_digit = serial_number[:1]
         self._serial_number = serial_number[1:]
-        self._sscc18 = '{0}{1}{2}'.format(
-            self._extension_digit,
-            self._company_prefix,
-            self._serial_number
-        )
-        if len(self._sscc18) != 17:
-            raise self.URNNotValid(
-                'The urn %s is not valid.  The parts representing the '
-                'SSCC-18 should be 17 digits in length.' %
-                urn_value
-            )
-        self._sscc18 = calculate_check_digit(self._sscc18)
+        barcode = '%s%s' % (self._extension_digit, self._company_prefix)
+        padding_length = 17 - len(barcode)
+        serial_number = self._serial_number.zfill(padding_length)
+        barcode = '%s%s' % (barcode, serial_number)
+        self._sscc18 = calculate_check_digit(barcode)
+
 
     def _handle_sgtin_urn(self, groups, urn_value):
         """
@@ -328,12 +324,47 @@ class URNConverter(BarcodeConverter):
             self._item_reference
         )
         if len(self._gtin14) != 13:
-            raise self.URNNotValid(
+            raise URNNotValid(
                 'The urn %s is not valid. The parts representing the '
                 'GTIN-14 should be 13 digits in length total.'
                 % urn_value
             )
         self._gtin14 = calculate_check_digit(self._gtin14)
+
+    def get_barcode_value(self, lot=None, expiration=None,
+                          insert_control_char=False, parenthesis=False,
+                          serial_number_padding=False,
+                          serial_number_length=12,
+                          padding_character='0'):
+        """
+        Returns the properly formatted barcode value.
+        :param lot: pass this in if you'd like to add a lot (10)
+        app identifier and lot value
+        :param expiration: Pass this in if you'd like to add an expiration (17)
+        and an expiration value
+        :param insert_control_char: Set to true if you'd like an FNC1
+        delimiter inserted after the serial number field.
+        :param parenthesis: Set to true if you'd like parenthesis around all
+        app identifiers.
+        :param serial_number_padding: Set to true to pad serial numbers in
+        SGTIN barcodes.
+        :param serial_number_length: Set the length of the serial number length
+        if you plan to pad it.
+        :param padding_character: The character to pad the serial number with-
+        default is zero
+        :return: The properly formatted barcode string.
+        """
+        if self.is_sgtin:
+            return self._get_gtin_barcode_val(
+                lot=lot, expiration=expiration,
+                insert_control_char=insert_control_char,
+                parenthesis=parenthesis,
+                serial_number_padding=serial_number_padding,
+                serial_number_length=serial_number_length,
+                padding_character=padding_character
+            )
+        else:
+            return self._get_sscc_barcode_val(parenthesis=parenthesis)
 
     def _get_gtin_barcode_val(self, lot=None, expiration=None,
                               insert_control_char=False, parenthesis=False,
@@ -358,7 +389,7 @@ class URNConverter(BarcodeConverter):
             barcode = '%s%s' % (barcode, FNC1)
         if expiration:
             if len(expiration) > 6:
-                raise self.InvalidFieldDataError(
+                raise InvalidFieldDataError(
                     'The length of the expiration date must be six characters '
                     'long in YYMMDD format per GS1 standards.'
                 )
@@ -377,14 +408,14 @@ class URNConverter(BarcodeConverter):
         barcode = '%s%s' % (barcode, serial_number)
         return format_string % calculate_check_digit(barcode)
 
-    class URNNotValid(BaseException):
-        """
-        Raised by instances when the inbound urn value is malformed.
-        """
-        pass
+class URNNotValid(Exception):
+    """
+    Raised by instances when the inbound urn value is malformed.
+    """
+    pass
 
-    class InvalidFieldDataError(BaseException):
-        """
-        Raised if inbound data is bad.
-        """
-        pass
+class InvalidFieldDataError(Exception):
+    """
+    Raised if inbound data is bad.
+    """
+    pass

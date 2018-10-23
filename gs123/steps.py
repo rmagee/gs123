@@ -14,6 +14,7 @@
 # Copyright 2018 SerialLab Corp.  All rights reserved.
 
 from gs123.xml_conversion import BarcodeConverter, convert_xml_string
+from gs123.conversion import URNConverter
 from quartet_capture import models
 from quartet_capture.rules import Step, RuleContext
 
@@ -128,6 +129,27 @@ class ListBarcodeConversionStep(BaseConversionClass):
             self.serial_number_length
         ).epc_urn
 
+class ListURNConversionStep(ListBarcodeConversionStep):
+
+    def convert(self, data):
+        """
+        Will convert the data parameter to a urn value and return.
+        Override this to return a different value from the BarcodeConverter.
+        :param data: The barcode value to convert.
+        :return: An EPC URN based on the inbound data.
+        """
+        return URNConverter(
+            data,
+            serial_number_length=self.serial_number_length,
+            insert_control_char=self.get_parameter('Add FNC1', False)
+        )
+
+    @property
+    def declared_parameters(self):
+        params = super().declared_parameters()
+        params['Add FNC1'] = 'Whether or not to add a FNC1 delimiter to ' \
+                             'variable length fields.  Default is False.'
+
 class XMLBarcodeConversionStep(BaseConversionClass):
     """
     Will look in the rule context for XML with barcode data in it that the
@@ -156,3 +178,6 @@ class XMLBarcodeConversionStep(BaseConversionClass):
             self.warning('No XML was found in the Rule Context under the '
                          'context key %s or the rule had no inbound data.'
                          % self.context_key)
+
+
+
