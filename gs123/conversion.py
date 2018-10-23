@@ -15,6 +15,7 @@
 
 import re
 from gs123 import regex
+from gs123.check_digit import calculate_check_digit
 
 FNC1 = '\x1D'
 
@@ -60,6 +61,7 @@ class BarcodeConverter:
         match = False
         if not barcode_val:
             raise self.BarcodeNotValid('No barcode was present.')
+        barcode_val = str(barcode_val)
         if barcode_val.startswith('(01)'):
             match = regex.NUMERIC_GS1_01_21_OPTIONAL_17_10.match(
                 barcode_val
@@ -248,4 +250,141 @@ class BarcodeConverter:
             self._extension_digit = self._sscc18[0]
 
     class BarcodeNotValid(BaseException):
+        pass
+
+
+class URNConverter(BarcodeConverter):
+    """
+    Converts an EPC urn to a valid barcode.
+    """
+
+    def __init__(self, urn_value: str):
+        """
+        Will convert the urn_value into a valid barcode.
+        :param urn_value: A urn to convert.
+        :param lot: If the lot is supplied an app identifier field of 10 will
+        be added to the barcode
+        :param expiration: If an expiration date value is supplied, this will
+        be added to the barcode as a 17 field/app identifier value.
+        """
+        for pattern in regex.urn_patterns:
+            match = pattern.match(
+                urn_value
+            )
+            if match:
+                self._populate(match, urn_value)
+
+    def _populate(self, match: re.Match, urn_value: str):
+        """
+        Will populate the class parameters based on the match where
+        applicable.
+        :param match: The regular expression match
+        :return: None
+        """
+        groups = match.groupdict()
+        self._serial_number = groups.get('serial_number')
+        self._company_prefix = groups.get('company_prefix')
+        if urn_value.startswith('urn:epc:id:sgtin:'):
+            self._handle_sgtin_urn(groups, urn_value)
+        elif urn_value.startswith('urn:epc:id:sscc:'):
+            self._handle_sscc_urn(groups, urn_value)
+
+    def _handle_sscc_urn(self, groups, urn_value):
+        """
+        Extracts sscc info from the urn value and the regex groups.
+        :param groups: The groups that were matched.
+        :param urn_value: The original urn.
+        :return: None
+        """
+        serial_number = groups.get('serial_number')
+        self._extension_digit = serial_number[:1]
+        self._serial_number = serial_number[1:]
+        self._sscc18 = '{0}{1}{2}'.format(
+            self._extension_digit,
+            self._company_prefix,
+            self._serial_number
+        )
+        if len(self._sscc18) != 17:
+            raise self.URNNotValid(
+                'The urn %s is not valid.  The parts representing the '
+                'SSCC-18 should be 17 digits in length.' %
+                urn_value
+            )
+        self._sscc18 = calculate_check_digit(self._sscc18)
+
+    def _handle_sgtin_urn(self, groups, urn_value):
+        """
+        Extracts sgtin info from the urn value and the regex groups.
+        :param groups: The groups that were matched.
+        :param urn_value: The original urn.
+        :return: None
+        """
+        item_reference = groups.get('item_reference')
+        self._item_reference = item_reference[1:]
+        self._indicator_digit = item_reference[:1]
+        self._gtin14 = '{0}{1}{2}'.format(
+            self._indicator_digit,
+            self._company_prefix,
+            self._item_reference
+        )
+        if len(self._gtin14) != 13:
+            raise self.URNNotValid(
+                'The urn %s is not valid. The parts representing the '
+                'GTIN-14 should be 13 digits in length total.'
+                % urn_value
+            )
+        self._gtin14 = calculate_check_digit(self._gtin14)
+
+    def _get_gtin_barcode_val(self, lot=None, expiration=None,
+                              insert_control_char=False, parenthesis=False,
+                              serial_number_padding=False,
+                              serial_number_length=12,
+                              padding_character='0') -> str:
+        """
+        Returns the barcode value for this instance.
+        :return: A string representing the barcode.
+        """
+        if serial_number_padding:
+            serial_number = self.serial_number.rjust(serial_number_length,
+                                                     padding_character)
+        else:
+            serial_number = self.serial_number
+        format_string = '(01){0}(21){1}' if parenthesis else '01{0}21{1}'
+        barcode = format_string.format(
+            self.gtin14,
+            serial_number
+        )
+        if insert_control_char:
+            barcode = '%s%s' % (barcode, FNC1)
+        if expiration:
+            if len(expiration) > 6:
+                raise self.InvalidFieldDataError(
+                    'The length of the expiration date must be six characters '
+                    'long in YYMMDD format per GS1 standards.'
+                )
+            format_string = '%s(17)%s' if parenthesis else '%s17%s'
+            barcode = format_string % (barcode, expiration)
+        if lot:
+            format_string = '%s(10)%s' if parenthesis else '%s10%s'
+            barcode = format_string % (barcode, lot)
+        return barcode
+
+    def _get_sscc_barcode_val(self, parenthesis=False) -> str:
+        format_string = '(00)%s' if parenthesis else '00%s'
+        barcode = '%s%s' % (self.extension_digit, self.company_prefix)
+        padding_length = 17 - len(barcode)
+        serial_number = self._serial_number.zfill(padding_length)
+        barcode = '%s%s' % (barcode, serial_number)
+        return format_string % calculate_check_digit(barcode)
+
+    class URNNotValid(BaseException):
+        """
+        Raised by instances when the inbound urn value is malformed.
+        """
+        pass
+
+    class InvalidFieldDataError(BaseException):
+        """
+        Raised if inbound data is bad.
+        """
         pass
