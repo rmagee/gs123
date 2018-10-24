@@ -101,6 +101,9 @@ class ListBarcodeConversionStep(BaseConversionClass):
     in the list to valid URNs.
     """
 
+    def __init__(self, db_task: models.Task, **kwargs):
+        super().__init__(db_task, **kwargs)
+
     def execute(self, data, rule_context: RuleContext):
         to_process = data or rule_context.context.get(self.context_key)
         if isinstance(to_process, list):
@@ -130,6 +133,12 @@ class ListBarcodeConversionStep(BaseConversionClass):
         ).epc_urn
 
 class ListURNConversionStep(ListBarcodeConversionStep):
+    """
+    Converts URN values into barcode values.
+    """
+
+    def __init__(self, db_task: models.Task, **kwargs):
+        super().__init__(db_task, **kwargs)
 
     def convert(self, data):
         """
@@ -139,16 +148,8 @@ class ListURNConversionStep(ListBarcodeConversionStep):
         :return: An EPC URN based on the inbound data.
         """
         return URNConverter(
-            data,
-            serial_number_length=self.serial_number_length,
-            insert_control_char=self.get_parameter('Add FNC1', False)
-        )
-
-    @property
-    def declared_parameters(self):
-        params = super().declared_parameters()
-        params['Add FNC1'] = 'Whether or not to add a FNC1 delimiter to ' \
-                             'variable length fields.  Default is False.'
+            data
+        ).serial_number
 
 class XMLBarcodeConversionStep(BaseConversionClass):
     """

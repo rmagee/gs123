@@ -444,6 +444,19 @@ class TestGs123(TestCase):
         c_rule = Rule(db_task.rule, db_task)
         data = c_rule.execute(data)
 
+    def test_parse_urn_data(self):
+        rule, task, conversion_step = self._create_urn_rule()
+        c_rule = Rule(task.rule, task)
+        vals = [
+            'urn:epc:id:sgtin:077722.0011210.12CW68RW6G',
+            'urn:epc:id:sgtin:077722.0011210.11X8KN3H4W',
+            'urn:epc:id:sgtin:077722.0011210.29A1X6F8KR',
+            'urn:epc:id:sgtin:077722.0011210.15684ART9V',
+            'urn:epc:id:sgtin:077722.0011210.2KK8NT4264'
+        ]
+        c_rule.execute(vals)
+        print(c_rule.data)
+
     def _create_rule(self):
         db_rule = models.Rule()
         db_rule.name = 'xml_barcode_conversion'
@@ -454,10 +467,30 @@ class TestGs123(TestCase):
         rp.save()
         # create a new step
         conversion_step = models.Step()
-        conversion_step.name = 'parse-epcis'
-        conversion_step.description = 'Parse the EPCIS data and store in database.'
+        conversion_step.name = 'parse-barcodes'
+        conversion_step.description = 'Convert barcodes to urns.'
         conversion_step.order = 1
         conversion_step.step_class = 'gs123.steps.XMLBarcodeConversionStep'
+        conversion_step.rule = db_rule
+        conversion_step.save()
+
+        db_task = models.Task(
+            rule=db_rule,
+            status='QUEUED',
+        )
+        return db_rule, db_task, conversion_step
+
+    def _create_urn_rule(self):
+        db_rule = models.Rule()
+        db_rule.name = 'List URN Conversion'
+        db_rule.description = 'Converts a list of URN values to barcodes.'
+        db_rule.save()
+
+        conversion_step = models.Step()
+        conversion_step.name = 'List URN Parser'
+        conversion_step.description = 'Parse a list of URN values.'
+        conversion_step.order = 1
+        conversion_step.step_class = 'gs123.steps.ListURNConversionStep'
         conversion_step.rule = db_rule
         conversion_step.save()
 
