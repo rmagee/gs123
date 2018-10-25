@@ -26,14 +26,7 @@ class BaseConversionClass(Step):
 
     def __init__(self, db_task: models.Task, **kwargs):
         super().__init__(db_task, **kwargs)
-        self.company_prefix_length, \
-        self.context_key, \
-        self.serial_number_length, \
-        self.use_context_key = self._get_parameter_values()
-
-    @property
-    def declared_parameters(self):
-        return {
+        self._declared_parameters = {
             "Context Key": "The context key where the data "
                            "to be converted can "
                            "be located.  Default is NUMBER_RESPONSE",
@@ -51,6 +44,14 @@ class BaseConversionClass(Step):
             "Company Prefix Length": "The length of the company prefix.  "
                                      "Default is 6."
         }
+        self.company_prefix_length, \
+        self.context_key, \
+        self.serial_number_length, \
+        self.use_context_key = self._get_parameter_values()
+
+    @property
+    def declared_parameters(self):
+        return self._declared_parameters
 
     def on_failure(self):
         pass
@@ -103,6 +104,10 @@ class ListBarcodeConversionStep(BaseConversionClass):
 
     def __init__(self, db_task: models.Task, **kwargs):
         super().__init__(db_task, **kwargs)
+        self._declared_parameters["Property"] = \
+            "The name of the property to access on the instance.  Check the" \
+            " properties on the BarcodeConverter class for available options."
+        self.prop_name = self.get_parameter('Property', 'epc_urn')
 
     def execute(self, data, rule_context: RuleContext):
         to_process = data or rule_context.context.get(self.context_key)
@@ -126,19 +131,27 @@ class ListBarcodeConversionStep(BaseConversionClass):
         :param data: The barcode value to convert.
         :return: An EPC URN based on the inbound data.
         """
-        return BarcodeConverter(
+        prop_val = BarcodeConverter(
             data,
             self.company_prefix_length,
             self.serial_number_length
-        ).epc_urn
+        ).__getattribute__(self.prop_name)
+        return prop_val if isinstance(prop_val, str) else prop_val()
+
 
 class ListURNConversionStep(ListBarcodeConversionStep):
     """
-    Converts URN values into barcode values.
+    Converts URN values into barcode values.  Using the Property step parameter
+    you can specify what property on the `ListBarcodeConversionStep` object
+    to return.
     """
 
     def __init__(self, db_task: models.Task, **kwargs):
         super().__init__(db_task, **kwargs)
+        self._declared_parameters["Property"] = \
+            "The name of the property to access on the instance.  Check the" \
+            " properties on the URNConverter class for available options."
+        self.prop_name = self.get_parameter('Property', 'get_barcode_value')
 
     def convert(self, data):
         """
@@ -147,9 +160,11 @@ class ListURNConversionStep(ListBarcodeConversionStep):
         :param data: The barcode value to convert.
         :return: An EPC URN based on the inbound data.
         """
-        return URNConverter(
+        prop_val = URNConverter(
             data
-        ).serial_number
+        ).__getattribute__(self.prop_name)
+        return prop_val if isinstance(prop_val, str) else prop_val()
+
 
 class XMLBarcodeConversionStep(BaseConversionClass):
     """
@@ -179,6 +194,3 @@ class XMLBarcodeConversionStep(BaseConversionClass):
             self.warning('No XML was found in the Rule Context under the '
                          'context key %s or the rule had no inbound data.'
                          % self.context_key)
-
-
-
