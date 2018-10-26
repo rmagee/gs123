@@ -87,7 +87,10 @@ class BaseConversionClass(Step):
             self.declared_parameters['Use Context Key']
         )
         use_context_key = ('true' == use_context_key.lower())
-        self.info('Using context key %s' % context_key)
+        if use_context_key:
+            self.info('Using context key %s' % context_key)
+        else:
+            self.info('Using the rule data.')
         return (
             company_prefix_length, context_key,
             serial_number_length, use_context_key
@@ -110,6 +113,8 @@ class ListBarcodeConversionStep(BaseConversionClass):
         self.prop_name = self.get_parameter('Property', 'epc_urn')
 
     def execute(self, data, rule_context: RuleContext):
+        self.info('Task parameters: %s', str(self.get_task_parameters(
+            rule_context=self.get_task_parameters(rule_context))))
         to_process = data or rule_context.context.get(self.context_key)
         if isinstance(to_process, list):
             converted = [self.convert(item) for item in to_process]
