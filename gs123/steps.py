@@ -113,8 +113,8 @@ class ListBarcodeConversionStep(BaseConversionClass):
         self.prop_name = self.get_parameter('Property', 'epc_urn')
 
     def execute(self, data, rule_context: RuleContext):
-        self.info('Task parameters: %s', str(self.get_task_parameters(
-            rule_context=self.get_task_parameters(rule_context))))
+        self.info('Task parameters: %s',
+                  str(self.get_task_parameters(rule_context)))
         to_process = data or rule_context.context.get(self.context_key)
         if isinstance(to_process, list):
             converted = [self.convert(item) for item in to_process]
