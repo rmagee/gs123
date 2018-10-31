@@ -169,6 +169,14 @@ class TestGs123(TestCase):
         convert_xml_file(curpath, output_file_path, company_prefix_length=6,
                          serial_number_length=10)
 
+    def test_sscc_file_conversion(self):
+        curpath = os.path.join(os.path.dirname(__file__),
+                               'data/ssccs.xml')
+        output_file_path = os.path.join(os.path.dirname(__file__),
+                                        'data/sscc_converted.xml')
+        convert_xml_file(curpath, output_file_path, company_prefix_length=6,
+                         serial_number_length=10)
+
     def test_string_conversion(self):
         data = """<?xml version='1.0' encoding='UTF-8'?>
 <S:Envelope xmlns:S="http://schemas.xmlsoap.org/soap/envelope/">

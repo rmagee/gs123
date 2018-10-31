@@ -1,0 +1,25 @@
+<S:Envelope xmlns:S="http://schemas.xmlsoap.org/soap/envelope/">
+   <S:Body>
+      <ns2:serialNumbersRequestResponse xmlns:ns2="urn:tracelink:soap">
+         <SNResponse>
+            <ReceivingSystem>0358716000006</ReceivingSystem>
+            <SendingSystem>0303780000063</SendingSystem>
+            <ActionCode>C</ActionCode>
+            <EncodingType>SSCC</EncodingType>
+            <IDType>GS1_SER</IDType>
+            <ObjectKey>
+               <Name>COMPANY_PREFIX</Name>
+               <Value>5099151|0</Value>
+            </ObjectKey>
+            <RandomizedNumberList>
+               <SerialNo>00050991510019004305</SerialNo>
+               <SerialNo>00050991510019004312</SerialNo>
+               <SerialNo>00050991510019004329</SerialNo>
+               <SerialNo>00050991510019004336</SerialNo>
+               <SerialNo>00050991510019004343</SerialNo>
+               <SerialNo>00050991510019004350</SerialNo>
+            </RandomizedNumberList>
+         </SNResponse>
+      </ns2:serialNumbersRequestResponse>
+   </S:Body>
+</S:Envelope>
