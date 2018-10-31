@@ -61,6 +61,14 @@ class TestGs123(TestCase):
         self.assertEqual(converter.epc_urn,
                          'urn:epc:id:sgtin:234567.1890123.123456789012')
 
+    def test_sscc_18(self):
+        converter = BarcodeConverter(
+            '00050991510019004305',
+            company_prefix_length=7
+        )
+        self.assertEqual(converter.company_prefix, "5099151")
+        self.assertEqual(converter.serial_number_field, "001900430")
+
     def test_01_21_17_10_with_parens(self):
         converter = BarcodeConverter(
             '(01)00312345678901(21)000000000001(17)191231(10)ABC123',

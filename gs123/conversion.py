@@ -246,7 +246,7 @@ class BarcodeConverter:
         else:  # this means we have an SSCC
             self._sscc18 = group_dict['sscc18']
             self._serial_number = self._sscc18[
-                                  1 + self._company_prefix_length:17]
+                                  1 + int(self._company_prefix_length):17]
             self._extension_digit = self._sscc18[0]
 
     class BarcodeNotValid(BaseException):
