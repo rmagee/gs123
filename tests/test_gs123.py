@@ -33,6 +33,20 @@ from gs123.check_digit import calculate_check_digit
 class TestGs123(TestCase):
     """Tests for `gs123` package."""
 
+    def test_01_21_no_parens_leading_zeros(self):
+        converter = BarcodeConverter(
+            '011234567890123421003456789012',
+            6
+        )
+        self.assertEqual(converter.gtin14, '12345678901234')
+        self.assertEqual(converter.serial_number_field, '003456789012')
+        self.assertEqual(converter.company_prefix, '234567')
+        self.assertEqual(converter.indicator_digit, '1')
+        self.assertEqual(converter.check_digit, '4')
+        self.assertEqual(converter.item_reference, '890123')
+        self.assertEqual(converter.epc_urn,
+                         'urn:epc:id:sgtin:234567.1890123.3456789012')
+
     def test_01_21_no_parens(self):
         converter = BarcodeConverter(
             '011234567890123421123456789012',
