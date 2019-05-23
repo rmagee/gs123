@@ -118,7 +118,7 @@ class BarcodeConverter:
         `serial_number_field` property.
         :return: Serial number as string.
         """
-        return self._serial_number.lstrip("0")
+        return self._serial_number
 
     @property
     def serial_number_field(self) -> str:
@@ -240,7 +240,7 @@ class BarcodeConverter:
         group_dict = match.groupdict()
         self._gtin14 = group_dict.get('gtin14')
         if self.gtin14:
-            self._serial_number = group_dict['serial_number'].strip()
+            self._serial_number = str(group_dict['serial_number'].strip())
             self._expiration_date = group_dict.get('expiration_date')
             self._lot = group_dict.get('lot')
         else:  # this means we have an SSCC
@@ -283,7 +283,7 @@ class URNConverter(BarcodeConverter):
         :return: None
         """
         groups = match.groupdict()
-        self._serial_number = groups.get('serial_number')
+        self._serial_number = str(groups.get('serial_number'))
         self._company_prefix = groups.get('company_prefix')
         if urn_value.startswith('urn:epc:id:sgtin:'):
             self._handle_sgtin_urn(groups, urn_value)
