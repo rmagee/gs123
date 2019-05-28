@@ -148,6 +148,21 @@ class TestGs123(TestCase):
             'urn:epc:id:sscc:123456.01234567890'
         )
 
+    def test_sscc18_without_parens_7_cp_len(self):
+        converter = BarcodeConverter(
+            '00012345612345678907',
+            7, 12
+        )
+        self.assertEqual(converter.extension_digit, '0')
+        self.assertEqual(converter.sscc18, '012345612345678907')
+        self.assertEqual(converter.serial_number, '234567890')
+        self.assertEqual(converter.check_digit, '7')
+        self.assertEqual(converter.company_prefix, '1234561')
+        self.assertEqual(
+            converter.epc_urn,
+            'urn:epc:id:sscc:1234561.0234567890'
+        )
+
     def test_sscc18_without_parens(self):
         converter = BarcodeConverter(
             '00012345612345678907',
