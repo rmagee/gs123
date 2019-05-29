@@ -90,7 +90,7 @@ class TestGs123(TestCase):
         )
         self.assertEqual(converter.gtin14, '00312345678901')
         self.assertEqual(converter.serial_number_field, '000000000001')
-        self.assertEqual(converter.serial_number, '000000000001')
+        self.assertEqual(converter.serial_number, '1')
         self.assertEqual(converter.company_prefix, '031234')
         self.assertEqual(converter.indicator_digit, '0')
         self.assertEqual(converter.check_digit, '1')
@@ -105,7 +105,7 @@ class TestGs123(TestCase):
             serial_number_length=12
         )
         self.assertEqual(converter.gtin14, '00312345678901')
-        self.assertEqual(converter.serial_number, '000000000001')
+        self.assertEqual(converter.serial_number, '1')
         self.assertEqual(converter.serial_number_field, '000000000001')
         self.assertEqual(converter.company_prefix, '031234')
         self.assertEqual(converter.indicator_digit, '0')
@@ -123,13 +123,35 @@ class TestGs123(TestCase):
         )
         self.assertEqual(converter.gtin14, '00312345678901')
         self.assertEqual(converter.serial_number_field, '000000000000001')
-        self.assertEqual(converter.serial_number, '000000000000001')
+        self.assertEqual(converter.serial_number, '1')
         self.assertEqual(converter.company_prefix, '031234')
         self.assertEqual(converter.indicator_digit, '0')
         self.assertEqual(converter.check_digit, '1')
         self.assertEqual(converter.item_reference, '567890')
         self.assertEqual(converter.epc_urn,
                          'urn:epc:id:sgtin:031234.0567890.1')
+        self.assertEqual(converter.lot, 'ABC123')
+        self.assertEqual(converter.expiration_date, '191231')
+
+    def test_01_21_17_10_no_parens_FNC1_padded(self):
+        converter = BarcodeConverter(
+            '010031234567890121000000000000001\x1D1719123110ABC123\x1D',
+            company_prefix_length=6,
+        )
+        self.assertEqual(converter.gtin14, '00312345678901')
+        self.assertEqual(converter.serial_number_field, '000000000000001')
+        self.assertEqual(converter.serial_number, '1')
+        self.assertEqual(converter.padded_serial_number, '000000000000001')
+        self.assertEqual(converter.company_prefix, '031234')
+        self.assertEqual(converter.indicator_digit, '0')
+        self.assertEqual(converter.check_digit, '1')
+        self.assertEqual(converter.item_reference, '567890')
+        self.assertEqual(converter.padded_epc_urn,
+                         'urn:epc:id:sgtin:031234.0567890.000000000000001')
+
+        self.assertEqual(converter.epc_urn,
+                         'urn:epc:id:sgtin:031234.0567890.1')
+
         self.assertEqual(converter.lot, 'ABC123')
         self.assertEqual(converter.expiration_date, '191231')
 
