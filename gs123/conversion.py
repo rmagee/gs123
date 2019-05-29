@@ -49,6 +49,7 @@ class BarcodeConverter:
         self._sscc18 = None
         self._extension_digit = None
         self._serial_number = None
+        self._padded_serial_number = None
         self._lot = None
         self._expiration_date = None
         self._indicator_digit = None
@@ -111,6 +112,14 @@ class BarcodeConverter:
         return self._gtin14
 
     @property
+    def padded_serial_number(self) -> str:
+        """
+        Returns as Serial Number, as-is.
+        :return: Serial Number as string.
+        """
+        return self._padded_serial_number
+
+    @property
     def serial_number(self) -> str:
         """
         Returns the serial number as a string with any leading zeros stripped.
@@ -118,7 +127,7 @@ class BarcodeConverter:
         `serial_number_field` property.
         :return: Serial number as string.
         """
-        return self._serial_number
+        return self._serial_number.lstrip("0")
 
     @property
     def serial_number_field(self) -> str:
@@ -195,7 +204,7 @@ class BarcodeConverter:
                 self.company_prefix,
                 self.indicator_digit,
                 self.item_reference,
-                self.serial_number.lstrip("0")
+                self.serial_number
             )
         else:
             ret = self._sscc_pattern.format(
@@ -204,6 +213,26 @@ class BarcodeConverter:
                 self.serial_number_field
             )
         return ret
+
+    @property
+    def padded_epc_urn(self) -> str:
+        """
+          If the Barcode is a GTIN-14, this will return the Serial Number 'as-is'. Meaning the
+          Serial Number will not have leading Zeros removed.
+          :return: String GS1 EPC URN for the Barcode
+        """
+
+        if self._gtin14:
+            ret = self._sgtin_pattern.format(
+                self.company_prefix,
+                self.indicator_digit,
+                self.item_reference,
+                self.padded_serial_number
+            )
+        else:
+            return self.epc_urn
+        return ret
+
 
     @property
     def epc_urn_fixed_serial(self) -> str:
@@ -218,7 +247,7 @@ class BarcodeConverter:
             self.company_prefix,
             self.indicator_digit,
             self.item_reference,
-            self.serial_number_field
+            self.padded_serial_number
         )
 
     def _fnc1_split(self, barcode_val: str) -> list:
@@ -240,7 +269,8 @@ class BarcodeConverter:
         group_dict = match.groupdict()
         self._gtin14 = group_dict.get('gtin14')
         if self.gtin14:
-            self._serial_number = str(group_dict['serial_number'].strip())
+            self._serial_number = str(group_dict['serial_number'].strip('\x1d'))
+            self._padded_serial_number = self._serial_number
             self._expiration_date = group_dict.get('expiration_date')
             self._lot = group_dict.get('lot')
         else:  # this means we have an SSCC
@@ -284,6 +314,7 @@ class URNConverter(BarcodeConverter):
         """
         groups = match.groupdict()
         self._serial_number = str(groups.get('serial_number'))
+        self._padded_serial_number = self._serial_number
         self._company_prefix = groups.get('company_prefix')
         if urn_value.startswith('urn:epc:id:sgtin:'):
             self._handle_sgtin_urn(groups, urn_value)
