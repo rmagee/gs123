@@ -1,0 +1,22 @@
+<test>
+    <SerialNo>urn:epc:id:sgtin:077722.0011210.12CW68RW6G</SerialNo>
+    <SerialNo>urn:epc:id:sgtin:077722.0011210.11X8KN3H4W</SerialNo>
+    <SerialNo>urn:epc:id:sgtin:077722.0011210.29A1X6F8KR</SerialNo>
+    <SerialNo>urn:epc:id:sgtin:077722.0011210.15684ART9V</SerialNo>
+    <SerialNo>urn:epc:id:sgtin:077722.0011210.2KK8NT4264</SerialNo>
+    <SerialNo>urn:epc:id:sgtin:077722.0011210.28CXFK54TA</SerialNo>
+    <SerialNo>urn:epc:id:sgtin:077722.0011210.2W8P83CHMX</SerialNo>
+    <SerialNo>urn:epc:id:sgtin:077722.0011210.1KAVFV78KR</SerialNo>
+    <SerialNo>urn:epc:id:sgtin:077722.0011210.129N2KGX5V</SerialNo>
+    <SerialNo>urn:epc:id:sgtin:077722.0011210.2RFH45W3HP</SerialNo>
+    <SerialNo>urn:epc:id:sgtin:077722.0011210.27199A82F1</SerialNo>
+    <SerialNo>urn:epc:id:sgtin:077722.0011210.139MVTN45G</SerialNo>
+    <SerialNo>urn:epc:id:sgtin:077722.0011210.15C8V44AVW</SerialNo>
+    <SerialNo>urn:epc:id:sgtin:077722.0011210.2GWAR41PPN</SerialNo>
+    <SerialNo>urn:epc:id:sgtin:077722.0011210.1A37A1G8R9</SerialNo>
+    <SerialNo>urn:epc:id:sgtin:077722.0011210.2RC15KFN7P</SerialNo>
+    <SerialNo>urn:epc:id:sgtin:077722.0011210.23AAMV29XF</SerialNo>
+    <SerialNo>urn:epc:id:sgtin:077722.0011210.18NF89GR2N</SerialNo>
+    <SerialNo>urn:epc:id:sgtin:077722.0011210.2PWT46W493</SerialNo>
+    <SerialNo test-attr="urn:epc:id:sgtin:077722.0011210.2PRP44K6PK">urn:epc:id:sgtin:077722.0011210.2PRP44K6PK</SerialNo>
+</test>
