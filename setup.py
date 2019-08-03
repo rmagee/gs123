@@ -48,7 +48,7 @@ if sys.argv[-1] == 'tag':
 
 
 setup(
-    author="SerialLab, Corp",
+    author="Rob Magee",
     author_email='slab@serial-lab.com',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
