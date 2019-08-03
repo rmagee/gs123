@@ -79,6 +79,13 @@ urn_patterns = [
 
 
 def match_pattern(barcode_val: str):
+    """
+    Will use the regular expressions in this module to find common barcode
+    components and return the match.  For an example of how to use this see
+    the `gs123.conversion.BarcodeConverter._populate` function.
+    :param barcode_val: The value to match.
+    :return: A regex match or none.
+    """
     match = False
     barcode_val = str(barcode_val)
     if barcode_val.startswith('(01)'):
