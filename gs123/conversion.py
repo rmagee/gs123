@@ -59,34 +59,9 @@ class BarcodeConverter:
         self._sgtin_pattern = 'urn:epc:id:sgtin:{0}.{1}{2}.{3}'
         self._sscc_pattern = 'urn:epc:id:sscc:{0}.{1}{2}'
         self._is_gtin = False
-        match = False
         if not barcode_val:
             raise self.BarcodeNotValid('No barcode was present.')
-        barcode_val = str(barcode_val)
-        if barcode_val.startswith('(01)'):
-            match = regex.NUMERIC_GS1_01_21_OPTIONAL_17_10.match(
-                barcode_val
-            )
-        elif barcode_val.startswith('(00)') or barcode_val.startswith('00'):
-            match = regex.SSCC.match(
-                barcode_val
-            )
-        if not match:
-            # try to split by fnc1 character
-            vals = self._fnc1_split(barcode_val)
-            if not match:
-                match = regex.NO_PARENS_NUMERIC_GS1_01_21.match(
-                    barcode_val
-                )
-            if not match:
-                match = regex.get_no_parens_numeric_gs1_01_21_optional_17_10(
-                ).match(
-                    barcode_val
-                )
-            if not match:
-                match = regex.FNC1_SERIAL.match(
-                    barcode_val
-                )
+        match = regex.match_pattern(barcode_val)
         if match:
             self._populate(match)
         else:
@@ -233,7 +208,6 @@ class BarcodeConverter:
             return self.epc_urn
         return ret
 
-
     @property
     def epc_urn_fixed_serial(self) -> str:
         """
@@ -250,14 +224,6 @@ class BarcodeConverter:
             self.padded_serial_number
         )
 
-    def _fnc1_split(self, barcode_val: str) -> list:
-        """
-        Splits the barcode value by the GS1 FNC1 (Ascii GS) character.
-        :param barcode_val: The value to split
-        :return: A list of strings.
-        """
-        return barcode_val.split('\x1d')
-
     def _populate(self, match) -> None:
         """
         If there is an inbound barcode that produces a match,
@@ -269,7 +235,8 @@ class BarcodeConverter:
         group_dict = match.groupdict()
         self._gtin14 = group_dict.get('gtin14')
         if self.gtin14:
-            self._serial_number = str(group_dict['serial_number'].strip('\x1d'))
+            self._serial_number = str(
+                group_dict['serial_number'].strip('\x1d'))
             self._padded_serial_number = self._serial_number
             self._expiration_date = group_dict.get('expiration_date')
             self._lot = group_dict.get('lot')
@@ -337,7 +304,6 @@ class URNConverter(BarcodeConverter):
         serial_number = self._serial_number.zfill(padding_length)
         barcode = '%s%s' % (barcode, serial_number)
         self._sscc18 = calculate_check_digit(barcode)
-
 
     def _handle_sgtin_urn(self, groups, urn_value):
         """
@@ -439,11 +405,13 @@ class URNConverter(BarcodeConverter):
         barcode = '%s%s' % (barcode, serial_number)
         return format_string % calculate_check_digit(barcode)
 
+
 class URNNotValid(Exception):
     """
     Raised by instances when the inbound urn value is malformed.
     """
     pass
+
 
 class InvalidFieldDataError(Exception):
     """

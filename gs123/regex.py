@@ -76,3 +76,33 @@ urn_patterns = [
     re.compile(SGTIN_URN),
     re.compile(SSCC_URN)
 ]
+
+
+def match_pattern(barcode_val: str):
+    match = False
+    barcode_val = str(barcode_val)
+    if barcode_val.startswith('(01)'):
+        match = NUMERIC_GS1_01_21_OPTIONAL_17_10.match(
+            barcode_val
+        )
+    elif barcode_val.startswith('(00)') or barcode_val.startswith('00'):
+        match = SSCC.match(
+            barcode_val
+        )
+    if not match:
+        # try to split by fnc1 character
+        vals = barcode_val.split('\x1d')
+        if not match:
+            match = NO_PARENS_NUMERIC_GS1_01_21.match(
+                barcode_val
+            )
+        if not match:
+            match = get_no_parens_numeric_gs1_01_21_optional_17_10(
+            ).match(
+                barcode_val
+            )
+        if not match:
+            match = FNC1_SERIAL.match(
+                barcode_val
+            )
+    return match
