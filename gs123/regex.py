@@ -60,8 +60,12 @@ _FNC1_SERIAL = r'^01(?P<gtin14>[0-9]{14})21(?P<serial_number>[0-9,A-Z]*?(\x1d\b)
 FNC1_SERIAL = re.compile(_FNC1_SERIAL)
 
 # https://regex101.com/r/ivtuux/1/
-_SSCC = r'^(00|\(00\))(?P<sscc18>\d{18})$'
+_SSCC = r'^(00|\(00\))?(?P<sscc18>\d{18})$'
 SSCC = re.compile(_SSCC)
+
+#https://regex101.com/r/PsHODE/1
+_GTIN14 = r'^(01|\(01\))?(?P<gtin14>\d{14})$'
+GTIN14 = re.compile(_GTIN14)
 
 # https://regex101.com/r/wjN6lC/1/
 NO_PARENS_NUMERIC_GS1_01_21_IN_DOC = r'01(?P<gtin14>[0-9]{14})21(?P<serial_number>[0-9,A-Z]{1,20})'
@@ -77,6 +81,10 @@ urn_patterns = [
     re.compile(SSCC_URN)
 ]
 
+patterns = [
+    GTIN14,
+    SSCC
+]
 
 def match_pattern(barcode_val: str):
     """
@@ -97,8 +105,6 @@ def match_pattern(barcode_val: str):
             barcode_val
         )
     if not match:
-        # try to split by fnc1 character
-        vals = barcode_val.split('\x1d')
         if not match:
             match = NO_PARENS_NUMERIC_GS1_01_21.match(
                 barcode_val

@@ -14,7 +14,7 @@
 # Copyright 2018 SerialLab Corp.  All rights reserved.
 
 import os
-from click.testing import CliRunner
+
 import django
 from django.test import TestCase
 
@@ -24,8 +24,7 @@ django.setup()
 from quartet_capture import models
 from quartet_capture.rules import Rule
 
-from gs123.conversion import BarcodeConverter, URNConverter, FNC1, \
-    URNNotValid, InvalidFieldDataError
+from gs123.conversion import BarcodeConverter, URNConverter, FNC1
 from gs123.xml_conversion import convert_xml_file, convert_xml_string
 from gs123.check_digit import calculate_check_digit
 
@@ -644,24 +643,3 @@ class TestGs123(TestCase):
             '1RFXVHNPA111'
         )
 
-    def test_gtin(self):
-        urnc = URNConverter(
-            'urn:epc:id:sgtin:0377713.011210.1RFXVHNPA111'
-        )
-        self.assertEqual(
-            urnc.gtin14,
-            '00377713112109'
-        )
-
-    def test_sscc(self):
-        urnc = URNConverter(
-            'urn:epc:id:sscc:305555.123456'
-        )
-        self.assertEqual(
-            urnc.serial_number,
-            '23456'
-        )
-        self.assertEqual(
-            urnc.sscc18,
-            '130555500000234560'
-        )
