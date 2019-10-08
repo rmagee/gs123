@@ -83,7 +83,7 @@ class BaseConversionClass(Step):
         )
         use_context_key = self.get_or_create_parameter(
             'Use Context Key',
-            'True',
+            'False',
             self.declared_parameters['Use Context Key']
         )
         use_context_key = ('true' == use_context_key.lower())
