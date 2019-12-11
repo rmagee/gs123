@@ -17,6 +17,7 @@ import os
 
 import django
 from django.test import TestCase
+from django.db.utils import IntegrityError
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'tests.test_settings'
 django.setup()
@@ -502,11 +503,12 @@ class TestGs123(TestCase):
             value='10',
             step=db_step
         )
-        models.StepParameter.objects.create(
+        sp = models.StepParameter.objects.get(
             name='Use Context Key',
-            value='False',
-            step=db_step
         )
+        sp.step = db_step
+        sp.value = 'False'
+        sp.save()
         c_rule = Rule(db_task.rule, db_task)
         data = c_rule.execute(data)
 
@@ -539,6 +541,12 @@ class TestGs123(TestCase):
         conversion_step.step_class = 'gs123.steps.XMLBarcodeConversionStep'
         conversion_step.rule = db_rule
         conversion_step.save()
+
+        ucc_param = models.StepParameter.objects.create(
+            name='Use Context Key',
+            value='True',
+            step=conversion_step,
+        )
 
         db_task = models.Task(
             rule=db_rule,
@@ -642,4 +650,10 @@ class TestGs123(TestCase):
             urnc.serial_number,
             '1RFXVHNPA111'
         )
+
+    def _fixture_teardown(self):
+        try:
+            super()._fixture_teardown()
+        except IntegrityError:
+            pass
 
