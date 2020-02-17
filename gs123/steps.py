@@ -181,6 +181,8 @@ class XMLBarcodeConversionStep(BaseConversionClass):
     def execute(self, data, rule_context: RuleContext):
         if self.use_context_key:
             barcode_xml = rule_context.context.get(self.context_key, None)
+            if isinstance(barcode_xml, bytes):
+                barcode_xml = barcode_xml.decode('utf-8')
         else:
             barcode_xml = data
         if barcode_xml:

@@ -41,6 +41,7 @@ NUMERIC_GS1_01_21_OPTIONAL_17_10 = re.compile(
 NO_PARENS_NUMERIC_GS1_01_21 = re.compile(_NO_PARENS_NUMERIC_GS1_01_21)
 
 # https://regex101.com/r/RkpSY6/3/
+# universal, works with just about every pattern
 _SGTIN_SN_10_13_ALPHA = r'^(01|\(01\))(?P<gtin14>[0-9]{14})(21|\(21\))(?P<serial_number>[0-9,a-z,A-Z]{10,13})((17|\(17\))(?P<expiration_date>\d{6}))?((10|\(10\))(?P<lot>[\x21-\x22\x25-\x2F\x30-\x39\x3A-\x3F\x41-\x5A\x5F\x61-\x7A]{0,20}))?$'
 SGTIN_SN_10_13_ALPHA = re.compile(_SGTIN_SN_10_13_ALPHA)
 
