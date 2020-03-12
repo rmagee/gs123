@@ -264,6 +264,7 @@ class URNConverter(BarcodeConverter):
         :param expiration: If an expiration date value is supplied, this will
         be added to the barcode as a 17 field/app identifier value.
         """
+        self._gtin14 = None
         self.is_sgtin = True
         for pattern in regex.urn_patterns:
             match = pattern.match(
@@ -283,6 +284,8 @@ class URNConverter(BarcodeConverter):
         self._serial_number = str(groups.get('serial_number'))
         self._padded_serial_number = self._serial_number
         self._company_prefix = groups.get('company_prefix')
+        if self._company_prefix:
+            self._company_prefix_length = len(self._company_prefix)
         if urn_value.startswith('urn:epc:id:sgtin:'):
             self._handle_sgtin_urn(groups, urn_value)
         elif urn_value.startswith('urn:epc:id:sscc:'):
