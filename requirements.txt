@@ -4,7 +4,7 @@
 #
 #    pip-compile --output-file=requirements.txt requirements.in
 #
-click==7.0
+click==7.1.1
 haikunator==2.1.0         # via quartet-capture
 lxml==4.5.0
-quartet-capture==3.0.2
+quartet-capture==3.3.0

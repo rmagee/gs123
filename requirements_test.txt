@@ -4,21 +4,21 @@
 #
 #    pip-compile --output-file=requirements_test.txt requirements_test.in
 #
-asgiref==3.2.3            # via django
-click==7.0
+asgiref==3.2.7            # via django
+click==7.1.1
 commonmark==0.9.1         # via epcpyyes
-coverage==5.0.3
+coverage==5.1
 django-model-utils==4.0.0  # via quartet-epcis
-django==3.0.3
+django==3.0.5
 eparsecis==3.1.0          # via quartet-epcis
 epcpyyes==2.0.5           # via eparsecis, quartet-epcis
 haikunator==2.1.0         # via quartet-capture
-jinja2==2.11.1            # via epcpyyes
+jinja2==2.11.2            # via epcpyyes
 lxml==4.5.0
 markupsafe==1.1.1         # via jinja2
 python-dateutil==2.8.1    # via quartet-epcis
 pytz==2019.3              # via django
-quartet-capture==3.0.2
-quartet-epcis==2.1.0
+quartet-capture==3.3.0
+quartet-epcis==2.1.1
 six==1.14.0               # via python-dateutil
-sqlparse==0.3.0           # via django
+sqlparse==0.3.1           # via django
