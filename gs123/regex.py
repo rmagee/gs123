@@ -40,6 +40,10 @@ NUMERIC_GS1_01_21_OPTIONAL_17_10 = re.compile(
 
 NO_PARENS_NUMERIC_GS1_01_21 = re.compile(_NO_PARENS_NUMERIC_GS1_01_21)
 
+_ALPHA_01_21_GTIN_NO_PARENS = r'^01(?P<gtin14>[0-9]{14})21(?P<serial_number>[0-9,a-z,A-Z]{10,20})$'
+ALPHA_01_21_GTIN_NO_PARENS = re.compile(_ALPHA_01_21_GTIN_NO_PARENS)
+
+
 # https://regex101.com/r/RkpSY6/3/
 # universal, works with just about every pattern
 _SGTIN_SN_10_13_ALPHA = r'^(01|\(01\))(?P<gtin14>[0-9]{14})(21|\(21\))(?P<serial_number>[0-9,a-z,A-Z]{10,13})((17|\(17\))(?P<expiration_date>\d{6}))?((10|\(10\))(?P<lot>[\x21-\x22\x25-\x2F\x30-\x39\x3A-\x3F\x41-\x5A\x5F\x61-\x7A]{0,20}))?$'
@@ -91,7 +95,7 @@ patterns = [
     SSCC
 ]
 
-def match_pattern(barcode_val: str):
+def match_pattern(barcode_val: str, max_serial_number_length=14):
     """
     Will use the regular expressions in this module to find common barcode
     components and return the match.  For an example of how to use this see
@@ -100,11 +104,17 @@ def match_pattern(barcode_val: str):
     :return: A regex match or none.
     """
     match = False
+    matches = []
     barcode_val = str(barcode_val)
-    if barcode_val.startswith('(01)') or barcode_val.startswith('01'):
+    if barcode_val.startswith('(01)'):
         match = SGTIN_SN_10_13_ALPHA.match(
             barcode_val
         )
+    elif barcode_val.startswith('01'):
+        if len(barcode_val) <= 18 + max_serial_number_length:
+            match = ALPHA_01_21_GTIN_NO_PARENS.match(
+                barcode_val
+            )
     elif barcode_val.startswith('(00)') or barcode_val.startswith('00'):
         match = SSCC.match(
             barcode_val

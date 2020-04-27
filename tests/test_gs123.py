@@ -49,17 +49,17 @@ class TestGs123(TestCase):
 
     def test_01_21_no_parens(self):
         converter = BarcodeConverter(
-            '011234567890123421123456789012',
+            '01003005406390512110008344372010',
             6
         )
-        self.assertEqual(converter.gtin14, '12345678901234')
-        self.assertEqual(converter.serial_number, '123456789012')
-        self.assertEqual(converter.company_prefix, '234567')
-        self.assertEqual(converter.indicator_digit, '1')
-        self.assertEqual(converter.check_digit, '4')
-        self.assertEqual(converter.item_reference, '890123')
+        self.assertEqual(converter.gtin14, '00300540639051')
+        self.assertEqual(converter.serial_number, '10008344372010')
+        self.assertEqual(converter.company_prefix, '030054')
+        self.assertEqual(converter.indicator_digit, '0')
+        self.assertEqual(converter.check_digit, '1')
+        self.assertEqual(converter.item_reference, '063905')
         self.assertEqual(converter.epc_urn,
-                         'urn:epc:id:sgtin:234567.1890123.123456789012')
+                         'urn:epc:id:sgtin:030054.0063905.10008344372010')
 
     def test_01_21_with_parens(self):
         converter = BarcodeConverter(
