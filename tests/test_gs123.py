@@ -61,6 +61,20 @@ class TestGs123(TestCase):
         self.assertEqual(converter.epc_urn,
                          'urn:epc:id:sgtin:030054.0063905.10008344372010')
 
+    def test_01_21_no_parens_12_digit(self):
+        converter = BarcodeConverter(
+            '013030054063905221100000001307',
+            6
+        )
+        self.assertEqual(converter.gtin14, '30300540639052')
+        self.assertEqual(converter.serial_number, '100000001307')
+        self.assertEqual(converter.company_prefix, '030054')
+        self.assertEqual(converter.indicator_digit, '3')
+        self.assertEqual(converter.check_digit, '2')
+        self.assertEqual(converter.item_reference, '063905')
+        self.assertEqual(converter.epc_urn,
+                         'urn:epc:id:sgtin:030054.3063905.100000001307')
+
     def test_01_21_with_parens(self):
         converter = BarcodeConverter(
             '(01)12345678901234(21)123456789012',
@@ -102,7 +116,7 @@ class TestGs123(TestCase):
         converter = BarcodeConverter(
             '0100312345678901210000000000011719123110ABC123',
             company_prefix_length=6,
-            serial_number_length=12
+            max_serial_number_length=12
         )
         self.assertEqual(converter.gtin14, '00312345678901')
         self.assertEqual(converter.serial_number, '1')

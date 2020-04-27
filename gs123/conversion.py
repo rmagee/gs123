@@ -27,7 +27,7 @@ class BarcodeConverter:
 
     def __init__(self, barcode_val: str,
                  company_prefix_length: int,
-                 serial_number_length: int = 12):
+                 max_serial_number_length: int = 14):
         """
         Initializes a new conversion class from a serialized GTIN in either
         01...21...17...10 or (01)...(21)...(17...(10) or 01...21 or
@@ -39,12 +39,12 @@ class BarcodeConverter:
 
         :param barcode_val: The barcode value to convert.
         :param company_prefix_length: The company prefix.
-        :param serial_number_length: The length of the serial number if
+        :param max_serial_number_length: The length of the serial number if
         the app identifiers do not have parenthesis and there are 17 and 10
         fields after the serial number field.
         """
         self._company_prefix_length = company_prefix_length
-        self._serial_number_length = serial_number_length
+        self._max_serial_number_length = max_serial_number_length
         self._gtin14 = None
         self._sscc18 = None
         self._extension_digit = None
@@ -61,7 +61,7 @@ class BarcodeConverter:
         self._is_gtin = False
         if not barcode_val:
             raise self.BarcodeNotValid('No barcode was present.')
-        match = regex.match_pattern(barcode_val)
+        match = regex.match_pattern(barcode_val, max_serial_number_length)
         if match:
             self._populate(match)
         else:

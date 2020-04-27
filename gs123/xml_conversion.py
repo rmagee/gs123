@@ -74,14 +74,14 @@ def _parse_xml(company_prefix_length, elements,
                 bc = converter_type(
                     element.text,
                     company_prefix_length=company_prefix_length,
-                    serial_number_length=serial_number_length
+                    max_serial_number_length=serial_number_length
                 )
                 element.text = bc.epc_urn
             for name, value in element.items():
                 bc = converter_type(
                     value,
                     company_prefix_length=company_prefix_length,
-                    serial_number_length=serial_number_length
+                    max_serial_number_length=serial_number_length
                 )
                 element.set(name, bc.epc_urn)
 
