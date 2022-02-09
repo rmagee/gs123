@@ -79,11 +79,11 @@ GTIN14 = re.compile(_GTIN14)
 # https://regex101.com/r/wjN6lC/1/
 NO_PARENS_NUMERIC_GS1_01_21_IN_DOC = r'01(?P<gtin14>[0-9]{14})21(?P<serial_number>[0-9,A-Z]{1,20})'
 
-# https://regex101.com/r/mVhm8D/2
-SGTIN_URN = r'urn:epc:id:sgtin:(?P<company_prefix>[0-9]{1,10}).(?P<item_reference>[0-9]{1,10}).(?P<serial_number>[0-9a-zA-Z]{1,20})'
+# https://regex101.com/r/Wcu34i/1
+SGTIN_URN = r'urn:epc:id:sgtin:(?P<company_prefix>[0-9]{1,12})\.(?P<item_reference>[0-9]{1,10})\.(?P<serial_number>[0-9a-zA-Z]{1,20})'
 
-# https://regex101.com/r/ik2XH2/1/
-SSCC_URN = r'urn:epc:id:sscc:(?P<company_prefix>[0-9]{4,10}).(?P<serial_number>[0-9]{1,10})'
+# https://regex101.com/r/LiUT8U/1
+SSCC_URN = r'urn:epc:id:sscc:(?P<company_prefix>[0-9]{4,12})\.(?P<serial_number>[0-9]{1,10})'
 
 urn_patterns = [
     re.compile(SGTIN_URN),
