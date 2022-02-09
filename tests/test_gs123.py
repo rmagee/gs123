@@ -665,6 +665,18 @@ class TestGs123(TestCase):
             '1RFXVHNPA111'
         )
 
+    def test_gcp_from_urn(self):
+        urnc_gtin_1 = URNConverter('urn:epc:id:sgtin:35555555555.01.123')
+        urnc_gtin_2 = URNConverter('urn:epc:id:sgtin:355555555555.0.123')
+        urnc_sscc_1 = URNConverter('urn:epc:id:sscc:35555555555.110001')
+        urnc_sscc_2 = URNConverter('urn:epc:id:sscc:355555555555.11001')
+
+        self.assertEqual(urnc_gtin_1.company_prefix, '35555555555')
+        self.assertEqual(urnc_gtin_2.company_prefix, '355555555555')
+        self.assertEqual(urnc_sscc_1.company_prefix, '35555555555')
+        self.assertEqual(urnc_sscc_2.company_prefix, '355555555555')
+
+
     def _fixture_teardown(self):
         try:
             super()._fixture_teardown()
